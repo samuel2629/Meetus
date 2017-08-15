@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="wrap_content"
+                                             android:background="@color/colorAccent"
+                                             android:id="@+id/friendItem"
+                                             android:padding="16dp" >
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:srcCompat="@mipmap/icon_profile_empty"
+        android:scaleType="fitCenter"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:textColor="@color/colorSecondary"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/image"
+        android:text="Firstname Lastname" />
+
+</android.support.constraint.ConstraintLayout>

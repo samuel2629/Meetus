@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <LinearLayout
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            app:srcCompat="@mipmap/icon_profile_empty"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center"
+            app:layout_constraintLeft_toLeftOf="parent"/>
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_height="48dp"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"
+            android:maxLines="1"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:gravity="center"
+            app:layout_constraintLeft_toRightOf="@+id/image"
+            android:text="Firstname Lastname" />
+
+        <TextView
+            android:id="@+id/durationFriend"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:text="Duration"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:textColor="@color/colorSecondary"/>
+
+
+    </LinearLayout>
+
+</LinearLayout>
