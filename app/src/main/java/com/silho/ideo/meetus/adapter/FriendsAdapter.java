@@ -2,12 +2,15 @@ package com.silho.ideo.meetus.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,7 @@ import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.CircleTransform;
+import com.silho.ideo.meetus.utils.FontHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +71,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private FriendsAdapter.OnItemFrienClicked mListener;
 
     public interface OnItemFrienClicked{
-        public void onItemFriendClicked(User user);
+        public void onItemFriendClicked(User user, String id);
     }
 
     public FriendsAdapter(List<FriendItem> items, FriendsAdapter.OnItemFrienClicked listener) {
@@ -86,7 +90,48 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final FriendsAdapter.ViewHolder holder, int position) {
-        holder.bindFriend(mValues.get(position));
+        FontHelper.setCustomTypeface(holder.mView);
+        final FriendItem friendItem = mValues.get(position);
+        holder.mName.setText(friendItem.name);
+        displayProfilePic(holder.mProfilePic, friendItem.image);
+
+        Context c = holder.mView.getContext();
+        SharedPreferences prefs = c.getSharedPreferences(Profile.getCurrentProfile().getId(),0);
+        boolean isFollowing = prefs.getBoolean(friendItem.id, false);
+        updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, isFollowing, c);
+
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Context c = view.getContext();
+                String userID = Profile.getCurrentProfile().getId();
+                SharedPreferences prefs = c.getSharedPreferences(userID, 0);
+                SharedPreferences.Editor editor = prefs.edit();
+
+                // switch following state for the given friend ID
+                boolean isFollowing = prefs.getBoolean(friendItem.id, false);
+                editor.putBoolean(friendItem.id, !isFollowing);
+                editor.apply();
+
+                updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, !isFollowing, c);
+
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(friendItem.id);
+                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User user = dataSnapshot.getValue(User.class);
+                        mListener.onItemFriendClicked(user, friendItem.id);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
@@ -94,47 +139,35 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         return mValues.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder{
         final View mView;
         final TextView mName;
         final ImageView mProfilePic;
         final TextView mDurationFriend;
-        private String mId;
-        private String mUrlProfilPic;
 
         public ViewHolder(View view) {
             super(view);
+
             mView = view;
             mName = (TextView) view.findViewById(R.id.name);
             mProfilePic = (ImageView) view.findViewById(R.id.image);
             mDurationFriend = (TextView) view.findViewById(R.id.durationFriend);
             mDurationFriend.setVisibility(View.GONE);
 
-            view.setOnClickListener(this);
         }
+    }
 
-        public void bindFriend(FriendItem friendItem) {
-            mName.setText(friendItem.name);
-            displayProfilePic(mProfilePic, friendItem.image);
-            mId = friendItem.id;
+    private void updateFollowButton(LinearLayout buttonView, ImageView imageView, TextView textView, boolean isFollowing, Context c) {
+        if (isFollowing) {
+            buttonView.setBackgroundResource(R.color.colorSecondary);
+            imageView.setVisibility(View.INVISIBLE);
+            textView.setTextColor(ContextCompat.getColor(c, R.color.colorPrimary));
         }
+        else {
+            buttonView.setBackgroundResource(R.color.colorAccent);
+            imageView.setVisibility(View.VISIBLE);
+            textView.setTextColor(ContextCompat.getColor(c, R.color.colorSecondary));
 
-        @Override
-        public void onClick(View view) {
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(mId);
-            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User user = dataSnapshot.getValue(User.class);
-                    mListener.onItemFriendClicked(user);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-            Toast.makeText(view.getContext(), mId, Toast.LENGTH_SHORT).show();
         }
     }
 

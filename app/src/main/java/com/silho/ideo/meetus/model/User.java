@@ -3,6 +3,11 @@ package com.silho.ideo.meetus.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
+
 /**
  * Created by Samuel on 01/08/2017.
  */
@@ -31,6 +36,20 @@ public class User implements Parcelable {
         idFacebook = in.readString();
         name = in.readString();
         profilPic = in.readString();
+    }
+
+    public JSONObject getJSONObject() {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("token", token);
+            obj.put("latitude", latitude);
+            obj.put("longitude", longitude);
+            obj.put("idFacebook", idFacebook);
+            obj.put("name", name);
+            obj.put("profilPic", profilPic);
+        } catch (JSONException e) {
+        }
+        return obj;
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {

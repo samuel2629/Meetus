@@ -20,6 +20,7 @@
         android:id="@+id/name"
         android:layout_width="0dp"
         android:layout_height="48dp"
+        android:fontFamily="sans-serif-smallcaps"
         android:textColor="@color/colorSecondary"
         android:textSize="16sp"
         android:maxLines="1"

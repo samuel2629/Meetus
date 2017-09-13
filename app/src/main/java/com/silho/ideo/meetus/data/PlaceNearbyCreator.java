@@ -35,7 +35,6 @@ import cz.msebera.android.httpclient.Header;
 
 public class PlaceNearbyCreator {
 
-    public static String API_KEY = null;
     private ItemNearbyAdapter mItemNearbyAdapter;
     private RecyclerView mRecyclerView;
     private Context mContext;

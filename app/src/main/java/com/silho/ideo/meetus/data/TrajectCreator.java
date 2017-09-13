@@ -25,13 +25,11 @@ import java.util.HashMap;
 public class TrajectCreator {
 
     private Context mContext;
-    private TextView mDurationView, mDistanceView;
+    private TextView mDurationView;
 
-    public TrajectCreator(Context context, TextView durationView, TextView distanceView){
+    public TrajectCreator(Context context, TextView durationView){
         mContext = context;
-        mDurationView = durationView;
-        mDistanceView = distanceView;
-    }
+        mDurationView = durationView;}
 
     public void getWebServicesPlaceApi(double myLatitude,
                                        double myLongitude,
@@ -113,7 +111,6 @@ public class TrajectCreator {
     private class ParserTask extends AsyncTask<String, Integer, Void> {
 
         JSONObject jObject;
-        private String mDistance;
         private String mDuration;
 
         @Override
@@ -125,9 +122,7 @@ public class TrajectCreator {
                 JSONObject elements = row.getJSONObject(0);
                 JSONArray element = elements.getJSONArray("elements");
                 JSONObject distanceAndTime = element.getJSONObject(0);
-                JSONObject distance = distanceAndTime.getJSONObject("distance");
                 JSONObject duration = distanceAndTime.getJSONObject("duration");
-                mDistance = distance.getString("text");
                 mDuration = duration.getString("text");
 
 
@@ -139,9 +134,7 @@ public class TrajectCreator {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            String distance = "Distance : " + mDistance;
             String duration = "Duration : " + mDuration;
-            mDistanceView.setText(distance);
             mDurationView.setText(duration);
         }
     }

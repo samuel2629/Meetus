@@ -4,15 +4,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.drawable.Icon;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.bumptech.glide.Glide;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
 
@@ -21,10 +18,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.InvitationResumerActivity;
-import com.silho.ideo.meetus.activities.MainActivity;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -38,18 +32,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public static final String DURATION = "duration";
     public static final String LATITUDE_DEST = "latitude_destination";
     public static final String LONGITUDE_DEST = "longitude_destination";
+    public static final String PLACE_NAME = "place_name";
+    public static final String TIME = "time";
 
     private String mIdFacebook;
     private String mDuration;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
+    private String mPlaceName;
+    private long mTime;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
         // There are two types of messages data messages and notification messages. Data messages are handled
         // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
-        // traditionally used with GCM. Notification messages are only received here in onMessageReceived when the app
+        // traditionally used with GCM. Notification messages are only recei  ved here in onMessageReceived when the app
         // is in the foreground. When the app is in the background an automatically generated notification is displayed.
         // When the user taps on the notification they are returned to the app. Messages containing both notification
         // and data payloads are treated as notification messages. The Firebase console always sends notification
@@ -64,9 +62,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             mIdFacebook = data.get("idFacebook");
             mDuration = data.get("durationSender");
-            String profilPic = data.get("profilPic");
             mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
             mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
+            mPlaceName = data.get("placeName");
+            mTime = Long.parseLong(data.get("time"));
+            sendNotification("Samuel", "Wanna Meetus ?");
 
             if (true) {
                 scheduleJob();
@@ -103,6 +103,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         bundle.putString(DURATION, mDuration);
         bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
         bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
+        bundle.putString(PLACE_NAME, mPlaceName);
+        bundle.putLong(TIME, mTime);
         intent.putExtras(bundle);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

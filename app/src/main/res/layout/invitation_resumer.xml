@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -82,34 +83,40 @@
 
     </FrameLayout>
 
-
-    <LinearLayout
+    <TextView
+        android:layout_marginTop="2dp"
+        android:id="@+id/dateTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:gravity="center"
+        android:padding="6dp"
+        android:text="--"
+        android:fontFamily="sans-serif-smallcaps"
+        android:textColor="#000000"
+        android:textSize="18sp"/>
 
-        <TextView
-            android:id="@+id/durationTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Duration"
-            android:textColor="#000000"
-            android:textSize="14sp"/>
+    <TextView
+        android:id="@+id/placeTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:fontFamily="sans-serif-smallcaps"
+        android:gravity="center"
+        android:text="--"
+        android:textColor="#000000"
+        android:textSize="18sp"/>
 
-        <TextView
-            android:id="@+id/distanceTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Distance"
-            android:textColor="#000000"
-            android:textSize="14sp"/>
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/durationTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:layout_marginBottom="2dp"
+        android:fontFamily="sans-serif-smallcaps"
+        android:gravity="center"
+        android:text="--"
+        android:textColor="#000000"
+        android:textSize="18sp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerViewInvitation"

@@ -1,7 +1,9 @@
 package com.silho.ideo.meetus.activities;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -10,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.TextView;
 
@@ -28,8 +31,11 @@ import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
 import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
+import com.silho.ideo.meetus.fragments.ForeseeFragment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,21 +43,14 @@ import butterknife.ButterKnife;
 public class InvitationResumerActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    @BindView(R.id.recyclerViewInvitation)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.bikingFAB)
-    FloatingActionButton mFABBiking;
-    @BindView(R.id.transportFAB)
-    FloatingActionButton mFABTransport;
-    @BindView(R.id.drivingFAB)
-    FloatingActionButton mFABDriving;
-    @BindView(R.id.walkingFAB)
-    FloatingActionButton mFABWalking;
-    @BindView(R.id.durationTextView)
-    TextView mDurationTextView;
-    @BindView(R.id.distanceTextView)
-    TextView mDistanceTextView;
-
+    @BindView(R.id.recyclerViewInvitation) RecyclerView mRecyclerView;
+    @BindView(R.id.bikingFAB) FloatingActionButton mFABBiking;
+    @BindView(R.id.transportFAB) FloatingActionButton mFABTransport;
+    @BindView(R.id.drivingFAB) FloatingActionButton mFABDriving;
+    @BindView(R.id.walkingFAB) FloatingActionButton mFABWalking;
+    @BindView(R.id.durationTextView) TextView mDurationTextView;
+    @BindView(R.id.placeTextView) TextView mPlaceNameTextView;
+    @BindView(R.id.dateTextView) TextView mDateTextView;
 
     private RoutesCreator mRoutesCreator;
     private GoogleApiClient mClient;
@@ -62,6 +61,8 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
     private double mLatitudeDestination;
     private double mLongitudeDestination;
     private TrajectCreator mTrajectCreator;
+    private String mPlaceName;
+    private long mTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +71,27 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
         ButterKnife.bind(this);
         buildGoogleApiClient();
 
-        mIdFacebook = getIntent().getExtras().getString(MyFirebaseMessagingService.ID_FACEBOOK);
-        mDurationSender = getIntent().getExtras().getString(MyFirebaseMessagingService.DURATION);
-        mLatitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LATITUDE_DEST);
-        mLongitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LONGITUDE_DEST);
+        mRecyclerView.setVisibility(View.GONE);
 
+        if(getIntent().getExtras() != null){
+            mIdFacebook = getIntent().getExtras().getString(MyFirebaseMessagingService.ID_FACEBOOK);
+            mDurationSender = getIntent().getExtras().getString(MyFirebaseMessagingService.DURATION);
+            mLatitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LATITUDE_DEST);
+            mLongitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LONGITUDE_DEST);
+            mPlaceName = getIntent().getExtras().getString(MyFirebaseMessagingService.PLACE_NAME);
+            mTime = getIntent().getExtras().getLong(MyFirebaseMessagingService.TIME);
+        }
+
+        String place = "Place : "+ mPlaceName;
+        mPlaceNameTextView.setText(place);
+        mDateTextView.setText(getDate(mTime));
     }
 
+    private String getDate(long time) {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.setTimeInMillis(time);
+        return DateFormat.format("EEE d MMM yyyy HH:mm", cal).toString();
+    }
 
     private void setRoadItinerary(LatLng latLng, String mode) {
         if (mRoutesCreator != null) {
@@ -113,12 +128,19 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
                 PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
                 (this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            return;
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    ForeseeFragment.MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    ForeseeFragment.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
         }
 
         mMyLatitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLatitude();
         mMyLongitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLongitude();
-        mTrajectCreator = new TrajectCreator(this, mDurationTextView, mDistanceTextView);
+        mTrajectCreator = new TrajectCreator(this, mDurationTextView);
         setTransportType(mLatitudeDestination, mLongitudeDestination);
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);

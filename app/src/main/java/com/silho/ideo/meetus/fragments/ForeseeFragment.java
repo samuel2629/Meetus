@@ -1,6 +1,10 @@
 package com.silho.ideo.meetus.fragments;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.location.Location;
@@ -10,19 +14,17 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.Profile;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -46,6 +48,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
@@ -53,19 +56,27 @@ import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
+import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.data.PlaceNearbyCreator;
 import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
+import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
+import com.silho.ideo.meetus.utils.FontHelper;
 import com.silho.ideo.meetus.utils.WorkaroundMapFragment;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 import static android.app.Activity.RESULT_OK;
+import static com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService.ID_FACEBOOK;
 
 /**
  * Created by Samuel on 01/08/2017.
@@ -76,21 +87,22 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         LocationListener, ItemNearbyAdapter.OnItemClicked, OnMapReadyCallback {
 
     private static final String TAG = ForeseeFragment.class.getSimpleName();
-    private static final String FRIENDS_FRAGMENT = "friends_fragment";
     private static final int PLACE_PICKER_REQUEST = 2;
+    private static final int DATE_PICKER = 3;
+    private static final int TIME_PICKER = 4;
+    private static final String FRIEND_FRAGMENT = "friend_fragment";
+    private static final int FRIEND_CHOOSED = 5;
+    public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 6;
+    public static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 7;
 
     @BindView(R.id.recyclerViewItemNearby)
     RecyclerView mRecyclerView;
     @BindView(R.id.durationTextView)
     TextView mDurationTextView;
-    @BindView(R.id.distanceTextView)
-    TextView mDistanceTextView;
     @BindView(R.id.addressTextView)
     TextView mAddressTextView;
     @BindView(R.id.scrollView)
     ScrollView mScrollView;
-    @BindView(R.id.rlfrag)
-    RelativeLayout mRelativeLayout;
     @BindView(R.id.searchPlacesFAB)
     FloatingActionButton mFABsearchPlacesButton;
     @BindView(R.id.restaurantTypeFAB)
@@ -107,8 +119,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     FloatingActionButton mFABDriving;
     @BindView(R.id.walkingFAB)
     FloatingActionButton mFABWalking;
-    @BindView(R.id.sendButton)
-    Button mButton;
+    @BindView(R.id.seeMoreFriendsFAB)
+    FloatingActionButton mFABMoreFriends;
+    @BindView(R.id.scheduleButton)
+    FloatingActionButton mFABScheduleButton;
+    @BindView(R.id.nowButton)
+    FloatingActionButton mFABNowButton;
 
     private GoogleApiClient mClient;
     private PlaceNearbyCreator mPlaceNearbyCreator;
@@ -120,34 +136,49 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     private double mMyLongitude;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
-    private boolean isDataCurrent;
     private String mToken;
     private String mIdFacebook;
     private String mUsername;
     private String mOwnerProfilPic;
-    private FriendsFragment mFriendsFragment;
     private String mNamePlace;
+
+    private int mYear;
+    private int mMonth;
+    private int mDay;
+    private ArrayList<User> mFriend;
+    private long mTime;
+    private User mUser;
+    private HashMap<String, User> hashMap;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_foresee, container, false);
+        FontHelper.setCustomTypeface(view);
         ButterKnife.bind(this, view);
 
+        hashMap = new HashMap<>();
+
+        mFriend = new ArrayList<>();
+        mFABNowButton.setVisibility(View.GONE);
+        mFABMoreFriends.setVisibility(View.GONE);
+
         mToken = FirebaseInstanceId.getInstance().getToken();
-        mOwnerProfilPic = getArguments().getString(MainActivity.URL_PROFIL_PIC);
-        mIdFacebook = getArguments().getString(MainActivity.ID_FACEBOOK);
-        mUsername = getArguments().getString(MainActivity.USERNAME);
+        mOwnerProfilPic = getArguments().getString(PageAdapter.URL_PROFIL_PIC);
+        mIdFacebook = getArguments().getString(PageAdapter.ID_FACEBOOK);
+        mUsername = getArguments().getString(PageAdapter.USERNAME);
 
         buildGoogleApiClient();
+        setFriends();
+        setDate();
 
-        if (MainActivity.ID_FACEBOOK != null) {
+        if (MainActivity.mIdFacebook != null) {
             FirebaseDatabase database = FirebaseDatabase.getInstance();
-            mDatabaseReference = database.getReference().child("users").child(MainActivity.ID_FACEBOOK);
+            mDatabaseReference = database.getReference().child("users").child(MainActivity.mIdFacebook);
         }
 
         mPlaceNearbyCreator = new PlaceNearbyCreator(getActivity(), mRecyclerView);
-        mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView, mDistanceTextView);
+        mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView);
 
         mFABsearchPlacesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -227,13 +258,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         });
     }
 
-    private void setFriends() {
-        mFriendsFragment = new FriendsFragment();
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction()
-                .add(R.id.rlfrag, mFriendsFragment, FRIENDS_FRAGMENT);
-        transaction.commit();
-    }
-
     private void setTransportType(final double latitude, final double longitude) {
 
         resestDesign(mFABBiking, mFABTransport, mFABWalking, mFABDriving,
@@ -301,6 +325,28 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         }
     }
 
+    private void setFriends() {
+        Fragment savedFragment = getChildFragmentManager().findFragmentByTag(FRIEND_FRAGMENT);
+        if (savedFragment == null) {
+            FriendsFragment friendsFragment = new FriendsFragment();
+            friendsFragment.setTargetFragment(ForeseeFragment.this, FRIEND_CHOOSED);
+            getChildFragmentManager().beginTransaction().add(R.id.rlfrag, friendsFragment).commit();
+        } else {
+            getChildFragmentManager().beginTransaction().add(R.id.rlfrag, savedFragment).commit();
+        }
+    }
+
+    private void setDate() {
+        mFABScheduleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerFragment datePickerFragment = new DatePickerFragment();
+                datePickerFragment.setTargetFragment(ForeseeFragment.this, DATE_PICKER);
+                datePickerFragment.show(getChildFragmentManager(), "datePicker");
+            }
+        });
+    }
+
     /**Api Connection Methods**/
 
     private void buildGoogleApiClient() {
@@ -314,83 +360,70 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        LocationRequest locationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000 * 600);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mClient, locationRequest, this);
 
-        if (ActivityCompat.checkSelfPermission(getActivity(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
-                (getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return;
+        if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(),
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
         }
 
         mMyLatitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLatitude();
         mMyLongitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLongitude();
         setPlaceType(LocationServices.FusedLocationApi.getLastLocation(mClient));
-        setFriends();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        final User user = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
-        mDatabaseReference.setValue(user);
-
-        ChildEventListener childEventListener = new ChildEventListener() {
+        mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (!isDataCurrent) {
-                    mDatabaseReference.setValue(null);
-                    User user = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
-                    mDatabaseReference.setValue(user);
-                    isDataCurrent = true;
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()){
+                    mUser = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
+                    mDatabaseReference.setValue(mUser);
+                } else {
+                    mDatabaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
                 }
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-            }
-        };
-        mDatabaseReference.addChildEventListener(childEventListener);
 
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                postRequestToServer();
             }
         });
 
 
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000 * 60);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mClient, locationRequest, this);
     }
 
     private void postRequestToServer() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("token", mToken);
-        params.put("duration", mDurationTextView.getText().toString());
-        params.put("latitude", mMyLatitude);
-        params.put("longitude", mMyLongitude);
+
         params.put("latitudeDestination", mLatitudeDestination);
         params.put("longitudeDestination", mLongitudeDestination);
+        params.put("placeName", mNamePlace);
+        params.put("time", mTime);
+
+        params.put("duration", mDurationTextView.getText().toString());
         params.put("idFacebook", mIdFacebook);
         params.put("username", mUsername);
-        params.put("friendToken", mFriendsFragment.getToken());
-        params.put("placeName", mNamePlace);
-        params.put("urlProfilPic", mFriendsFragment.getUrlProfilPic());
+
+        JSONArray array = new JSONArray();
+        for(int i=0; i<mFriend.size(); i++){
+            array.put(mFriend.get(i).getJSONObject());
+        }
+
+        params.put("friendsList", array);
+
         client.post("https://meetusite.herokuapp.com/request", params,
                 new TextHttpResponseHandler() {
                     @Override
@@ -413,7 +446,10 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     }
 
     @Override
-    public void onLocationChanged(Location location) {}
+    public void onLocationChanged(Location location) {
+      mDatabaseReference.child("latitude").setValue(location.getLatitude());
+      mDatabaseReference.child("longitude").setValue(location.getLongitude());
+    }
 
     /**Place Pickers Methods**/
 
@@ -442,10 +478,11 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK) {
 
             Place place = PlacePicker.getPlace(getActivity(), data);
-            String namePlace = String.valueOf(place.getName());
+            mNamePlace = String.valueOf(place.getName());
             String address = String.valueOf(place.getAddress());
             mLatitudeDestination = place.getLatLng().latitude;
             mLongitudeDestination = place.getLatLng().longitude;
@@ -453,11 +490,80 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 return;
             }
 
-            mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView, mDistanceTextView);
+            mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView);
             setTransportType(mLatitudeDestination, mLongitudeDestination);
-            resetDesignAfterActivityResult(namePlace, address);
+            resetDesignAfterActivityResult(mNamePlace, address);
 
         }
+        if(requestCode == DATE_PICKER){
+            if(resultCode == Activity.RESULT_OK){
+                Bundle bundle = data.getExtras();
+                mYear = bundle.getInt("selectedYear");
+                mMonth = bundle.getInt("selectedMonth");
+                mDay = bundle.getInt("selectedDay");
+
+                TimePickerFragment timePickerFragment = new TimePickerFragment();
+                timePickerFragment.setTargetFragment(ForeseeFragment.this, TIME_PICKER);
+                timePickerFragment.show(getChildFragmentManager(), "timePicker");
+            }
+        }
+        if(requestCode == TIME_PICKER){
+            if(resultCode == RESULT_OK){
+                Bundle bund = data.getExtras();
+                int hour = bund.getInt("selectedHour");
+                int minute = bund.getInt("selectedMinutes");
+                mTime = componentTimeToTimestamp(mYear, mMonth, mDay, hour, minute);
+                if(mFriend.size() == 0){
+                    DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
+                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination);
+                    databaseReference.push().setValue(scheduledEvent);
+                    Toast.makeText(getActivity(), "Event Scheduled.", Toast.LENGTH_SHORT).show();
+                } else {
+                    postRequestToServer();
+                }
+            }
+        }
+
+        if(requestCode == FRIEND_CHOOSED){
+            if(resultCode == RESULT_OK){
+                Bundle bundle = data.getExtras();
+                String id = (String) bundle.get("id");
+                User user  = (User) bundle.get("user");
+
+                if(hashMap.containsKey(id)){
+                    hashMap.remove(id);
+                } else {
+                    hashMap.put(id, user);
+                }
+
+                mFriend = new ArrayList<>(hashMap.values());
+
+                mFABNowButton.setVisibility(View.VISIBLE);
+                mFABNowButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(mLatitudeDestination == 0.0 || mLongitudeDestination == 0.0){
+                            Toast.makeText(getActivity(), "A Destination Is Required.", Toast.LENGTH_SHORT).show();
+                        }
+                        postRequestToServer();
+                    }
+                });
+            }
+        }
+    }
+
+    long componentTimeToTimestamp(int year, int month, int day, int hour, int minute) {
+
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.MONTH, month);
+        c.set(Calendar.DAY_OF_MONTH, day);
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.MINUTE, minute);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        return (c.getTimeInMillis() / 1000L);
     }
 
     /**Lifecycle Methods**/
@@ -474,8 +580,11 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         Log.i(TAG, "onStop Fragment");
         if (mClient.isConnected()) {
             mClient.disconnect();
-            //isDataCurrent = false;
         }
+
+        SharedPreferences preferences = getContext().getSharedPreferences(Profile.getCurrentProfile().getId(), 0);
+        preferences.edit().clear().apply();
+
     }
 
     /**UI Methods**/
@@ -495,8 +604,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     }
 
     private void resetDesignTrajectsTypes() {
-        mDistanceTextView.setText("Distance");
-        mDurationTextView.setText("Duration");
+        mDurationTextView.setText("");
         mFABBiking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABWalking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABDriving.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
@@ -518,5 +626,4 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mRecyclerView.setVisibility(View.VISIBLE);
         mAddressTextView.setVisibility(View.GONE);
     }
-
 }

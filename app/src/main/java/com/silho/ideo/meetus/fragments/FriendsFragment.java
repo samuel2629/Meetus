@@ -1,15 +1,20 @@
 package com.silho.ideo.meetus.fragments;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SnapHelper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -26,6 +31,7 @@ import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.FriendsAdapter;
 import com.silho.ideo.meetus.model.User;
 
@@ -47,8 +53,7 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
     RecyclerView recyclerView;
     TextView emptyText;
     private FriendsAdapter mFriendsAdapter;
-    private String mToken;
-    private String mUrlProfilPic;
+
 
 
     @Nullable
@@ -159,21 +164,16 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
     @Override
     public boolean onQueryTextChange(String newText) {
         String text = newText;
-        mFriendsAdapter.filter(text);
+        if(mFriendsAdapter != null){
+        mFriendsAdapter.filter(text);}
         return false;
     }
 
     @Override
-    public void onItemFriendClicked(User user) {
-        mToken = user.token;
-        mUrlProfilPic = user.profilPic;
-    }
-
-    public String getToken() {
-        return mToken;
-    }
-
-    public String getUrlProfilPic(){
-        return mUrlProfilPic;
+    public void onItemFriendClicked(User user, String id) {
+        Intent intent = new Intent();
+        intent.putExtra("user", user);
+        intent.putExtra("id", id);
+        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
     }
 }

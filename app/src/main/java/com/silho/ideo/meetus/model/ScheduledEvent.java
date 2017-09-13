@@ -13,29 +13,58 @@ import java.util.Date;
 
 public class ScheduledEvent implements Parcelable{
 
-    private LatLng mLatLng;
-    private Date mDate;
+    private Double mLat, mLong;
+    private String mPlaceName;
+    private long mTp;
 
-    public LatLng getLatLng() {
-        return mLatLng;
+    public ScheduledEvent(){}
+
+    public ScheduledEvent(long tp, String placeName, double latitudeDestination, double longitudeDestination){
+        mLat = latitudeDestination;
+        mLong = longitudeDestination;
+        mTp = tp;
+        mPlaceName = placeName;
     }
 
-    public void setLatLng(LatLng latLng) {
-        mLatLng = latLng;
+    public long getTp() {
+        return mTp;
     }
 
-    public Date getDate() {
-        return mDate;
+    public void setTp(long tp) {
+        mTp = tp;
     }
 
-    public void setDate(Date date) {
-        mDate = date;
+    public Double getLat() {
+        return mLat;
+    }
+
+    public void setLat(Double lat) {
+        mLat = lat;
+    }
+
+    public Double getLong() {
+        return mLong;
+    }
+
+    public void setLong(Double aLong) {
+        mLong = aLong;
+    }
+
+    public String getPlaceName() {
+        return mPlaceName;
+    }
+
+    public void setPlaceName(String placeName) {
+        mPlaceName = placeName;
     }
 
 
-    protected ScheduledEvent(Parcel in) {
-        mLatLng = in.readParcelable(LatLng.class.getClassLoader());
-        mDate = in.readParcelable(Date.class.getClassLoader());
+
+    public ScheduledEvent(Parcel in) {
+        mLat = in.readDouble();
+        mLong = in.readDouble();
+        mPlaceName = in.readString();
+        mTp = in.readLong();
     }
 
     public static final Creator<ScheduledEvent> CREATOR = new Creator<ScheduledEvent>() {
@@ -57,7 +86,9 @@ public class ScheduledEvent implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeParcelable(mLatLng, i);
-        parcel.writeParcelable((Parcelable) mDate, i);
+        parcel.writeDouble(mLat);
+        parcel.writeDouble(mLong);
+        parcel.writeString(mPlaceName);
+        parcel.writeLong(mTp);
     }
 }

@@ -3,7 +3,13 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/log_out"
-        android:orderInCategory="100"
         android:title="@string/log_out"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/renew"
+        android:title="@string/renew"
+        android:icon="@drawable/ic_autorenew_black_24dp"
+        app:showAsAction="always"/>
+
 </menu>

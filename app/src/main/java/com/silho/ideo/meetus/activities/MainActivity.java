@@ -1,14 +1,14 @@
 package com.silho.ideo.meetus.activities;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -29,15 +29,12 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.silho.ideo.meetus.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.fragments.FriendsFragment;
 import com.silho.ideo.meetus.utils.CircleTransform;
+import com.silho.ideo.meetus.utils.FontHelper;
 
 
 import org.json.JSONException;
@@ -49,20 +46,17 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String FORSEE_FRAGMENT = "forsee_fragment";
-    private static final String FRIENDS_FRAGMENT = "friends_fragment";
-    public static final String USERNAME = "name";
-    public static final String URL_PROFIL_PIC = "profil_pic_url";
-    public static String ID_FACEBOOK;
+    public static String mIdFacebook;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.nav_view) NavigationView mNavView;
     @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.container_frameLayout) FrameLayout mFrameLayout;
+    @BindView(R.id.pager) ViewPager mViewPager;
+    @BindView(R.id.toolbar_title) TextView mToolBarTitle;
 
     public static final int RC_SIGN_IN = 1;
 
@@ -79,14 +73,19 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        FontHelper.setCustomTypeface(findViewById(R.id.container_frameLayout));
+        FontHelper.setCustomTypeface(mToolBarTitle);
 
         View navHeader = mNavView.getHeaderView(0);
         mImageProfilNavHeader = (ImageView) navHeader.findViewById(R.id.profilPic);
         mFullNameNavHeader = (TextView) navHeader.findViewById(R.id.nameText);
         mEmailNavHeader = (TextView) navHeader.findViewById(R.id.emailText);
 
-        mToolbar.setTitle("Foresee");
         setSupportActionBar(mToolbar);
+        MainActivity.this.setTitle("");
+
+        String title = "Scheduler";
+        mToolBarTitle.setText(title);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -94,10 +93,9 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         mNavView.setNavigationItemSelectedListener(this);
+
         if(isNetworkAvailable()) {
             login();
-        } else {
-            Snackbar.make(mFrameLayout, "No Network", Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -118,7 +116,8 @@ public class MainActivity extends AppCompatActivity
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
                                     .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
+                                    .setAvailableProviders(Arrays.asList
+                                            (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
                                             new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
                                     .setTheme(R.style.LoginTheme)
                                     .build(),
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity
     private void getFacebookDataInfo() {
         if(AccessToken.getCurrentAccessToken() != null){
             Bundle parameters = new Bundle();
-            parameters.putString("fields", "id,email,name,picture.type(large)");
+            parameters.putString("fields", "id,name,email,picture.type(large)");
             new GraphRequest(AccessToken.getCurrentAccessToken(),
                     "/me", parameters, HttpMethod.GET, new GraphRequest.Callback() {
                 @Override
@@ -168,10 +167,11 @@ public class MainActivity extends AppCompatActivity
 
     private void setUserDataUI(JSONObject data) throws JSONException {
         String name = data.getString("name");
-        String email = data.getString("email");
-        ID_FACEBOOK = data.getString("id");
+        mIdFacebook = data.getString("id");
+        String mail = data.getString("email");
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
+
         Glide.with(MainActivity.this).load(profilPic)
                 .thumbnail(0.75f)
                 .apply(RequestOptions
@@ -181,37 +181,32 @@ public class MainActivity extends AppCompatActivity
                 .into(mImageProfilNavHeader);
 
         mFullNameNavHeader.setText(name);
-        launchForeseeFragment(ID_FACEBOOK, name, profilPic);
-        mEmailNavHeader.setText(email);
-    }
+        mEmailNavHeader.setText(mail);
 
-    private void launchForeseeFragment(String idFacebook, String name, String profilPic) {
-        ForeseeFragment savedFragment = (ForeseeFragment) getSupportFragmentManager().findFragmentByTag(FORSEE_FRAGMENT);
-        if(savedFragment == null){
-            ForeseeFragment foreseeFragment = new ForeseeFragment();
-            Bundle bundle = new Bundle();
-            bundle.putString(ID_FACEBOOK, idFacebook);
-            bundle.putString(USERNAME,name);
-            bundle.putString(URL_PROFIL_PIC, profilPic);
-            foreseeFragment.setArguments(bundle);
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.container_frameLayout, foreseeFragment, FORSEE_FRAGMENT);
-            transaction.commit();}
-        else{
-            getSupportFragmentManager().beginTransaction().replace(R.id.container_frameLayout, savedFragment).commit();
-        }
-    }
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 3, mIdFacebook, name, profilPic);
+        mViewPager.setAdapter(pageAdapter);
+        mViewPager.setCurrentItem(1, true);
+        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                if(position == 1){
+                    mToolBarTitle.setText("Scheduler");
+                } else if(position == 0){
+                    mToolBarTitle.setText("Personal Calendar");
+                }
+            }
 
-    private void launchFriendFragment() {
-        FriendsFragment savedFragment = (FriendsFragment) getSupportFragmentManager().findFragmentByTag(FRIENDS_FRAGMENT);
-        if(savedFragment == null){
-        FriendsFragment friendsFragment = new FriendsFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction()
-                .add(R.id.container_frameLayout, friendsFragment, FRIENDS_FRAGMENT).addToBackStack(null);
-        transaction.commit();}
-        else{
-            getSupportFragmentManager().beginTransaction().replace(R.id.container_frameLayout, savedFragment).commit();
-        }
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     /**Lifecycle Methods **/
@@ -237,60 +232,31 @@ public class MainActivity extends AppCompatActivity
     /** Menu's Methods **/
 
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.log_out) {
             AuthUI.getInstance().signOut(this);
+        }
+        if(id == R.id.renew){
+            recreate();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    public void setCurrentItem(int item, boolean smoothScroll) {
+        mViewPager.setCurrentItem(item, smoothScroll);
+    }
+
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.friends) {
-            launchFriendFragment();
-
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
     }
 }

@@ -32,4 +32,6 @@
     <string name="uninvite">disivinte</string>
     <string name="invite">Invite</string>
     <string name="send">send</string>
+    <string name="schedule">schedule</string>
+    <string name="renew">renew</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.model.PlaceNearby;
 import com.silho.ideo.meetus.utils.CircleTransform;
+import com.silho.ideo.meetus.utils.FontHelper;
 
 import java.util.ArrayList;
 
@@ -48,6 +50,7 @@ public class ItemNearbyAdapter extends RecyclerView.Adapter<ItemNearbyAdapter.It
 
     @Override
     public void onBindViewHolder(ItemNearbyViewHolder holder, int position) {
+        FontHelper.setCustomTypeface(holder.itemView);
         holder.bindPlace(mPlaceNearby.get(position));
     }
 
