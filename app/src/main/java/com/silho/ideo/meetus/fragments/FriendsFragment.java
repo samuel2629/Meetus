@@ -111,7 +111,7 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
 
     private void fetchFriends() {
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,name,picture");
+        parameters.putString("fields", "id,name,picture.type(large)");
         parameters.putInt("limit", 100);
         new GraphRequest(AccessToken.getCurrentAccessToken(),
                 "/me/friends",

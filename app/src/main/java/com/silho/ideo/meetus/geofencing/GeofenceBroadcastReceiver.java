@@ -79,18 +79,18 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         // Get a notification builder
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
-        // Check the transition type to display the relevant icon image
-        if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            builder.setSmallIcon(R.drawable.ic_volume_off_white_24dp)
-                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
-                            R.drawable.ic_volume_off_white_24dp))
-                    .setContentTitle(context.getString(R.string.silent_mode_activated));
-        } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            builder.setSmallIcon(R.drawable.ic_volume_up_white_24dp)
-                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
-                            R.drawable.ic_volume_up_white_24dp))
-                    .setContentTitle(context.getString(R.string.back_to_normal));
-        }
+//        // Check the transition type to display the relevant icon image
+//        if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
+//            builder.setSmallIcon(R.drawable.ic_volume_off_white_24dp)
+//                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
+//                            R.drawable.ic_volume_off_white_24dp))
+//                    .setContentTitle(context.getString(R.string.silent_mode_activated));
+//        } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
+//            builder.setSmallIcon(R.drawable.ic_volume_up_white_24dp)
+//                    .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
+//                            R.drawable.ic_volume_up_white_24dp))
+//                    .setContentTitle(context.getString(R.string.back_to_normal));
+//        }
 
         // Continue building the notification
         builder.setContentText(context.getString(R.string.touch_to_relaunch));

@@ -58,7 +58,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             return name;
         }
 
-
         public FriendItem(String id, String name, String image) {
             this.id = id;
             this.name = name;
@@ -69,9 +68,10 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private final List<FriendItem> mValues;
     private ArrayList<FriendItem> arraylist;
     private FriendsAdapter.OnItemFrienClicked mListener;
+    private boolean mIsOnClickActivated;
 
     public interface OnItemFrienClicked{
-        public void onItemFriendClicked(User user, String id);
+        void onItemFriendClicked(User user, String id);
     }
 
     public FriendsAdapter(List<FriendItem> items, FriendsAdapter.OnItemFrienClicked listener) {
@@ -79,6 +79,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         arraylist = new ArrayList<>();
         arraylist.addAll(items);
         mListener = listener;
+        mIsOnClickActivated = true;
+    }
+
+    public FriendsAdapter(List<FriendItem> items){
+        mValues = items;
+        arraylist = new ArrayList<>();
+        arraylist.addAll(items);
+        mIsOnClickActivated = false;
     }
 
     @Override
@@ -90,7 +98,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final FriendsAdapter.ViewHolder holder, int position) {
-        FontHelper.setCustomTypeface(holder.mView);
+        //FontHelper.setCustomTypeface(holder.mView);
         final FriendItem friendItem = mValues.get(position);
         holder.mName.setText(friendItem.name);
         displayProfilePic(holder.mProfilePic, friendItem.image);
@@ -100,6 +108,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         boolean isFollowing = prefs.getBoolean(friendItem.id, false);
         updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, isFollowing, c);
 
+        if(mIsOnClickActivated){
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -130,7 +139,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     }
                 });
             }
-        });
+        });}
 
     }
 
@@ -143,7 +152,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         final View mView;
         final TextView mName;
         final ImageView mProfilePic;
-        final TextView mDurationFriend;
 
         public ViewHolder(View view) {
             super(view);
@@ -151,23 +159,18 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             mView = view;
             mName = (TextView) view.findViewById(R.id.name);
             mProfilePic = (ImageView) view.findViewById(R.id.image);
-            mDurationFriend = (TextView) view.findViewById(R.id.durationFriend);
-            mDurationFriend.setVisibility(View.GONE);
-
         }
     }
 
     private void updateFollowButton(LinearLayout buttonView, ImageView imageView, TextView textView, boolean isFollowing, Context c) {
         if (isFollowing) {
             buttonView.setBackgroundResource(R.color.colorSecondary);
-            imageView.setVisibility(View.INVISIBLE);
             textView.setTextColor(ContextCompat.getColor(c, R.color.colorPrimary));
         }
         else {
-            buttonView.setBackgroundResource(R.color.colorAccent);
+            buttonView.setBackgroundResource(R.color.colorBackground);
             imageView.setVisibility(View.VISIBLE);
             textView.setTextColor(ContextCompat.getColor(c, R.color.colorSecondary));
-
         }
     }
 

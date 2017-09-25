@@ -19,6 +19,9 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.InvitationResumerActivity;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.Map;
 
 /**
@@ -29,18 +32,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
     public static final String ID_FACEBOOK = "facebookID";
-    public static final String DURATION = "duration";
     public static final String LATITUDE_DEST = "latitude_destination";
     public static final String LONGITUDE_DEST = "longitude_destination";
     public static final String PLACE_NAME = "place_name";
     public static final String TIME = "time";
+    public static final String FRIENDS_LIST = "friends_list";
+    public static final String FRIENDS_LIST_INVITED = "friends_list_invited";
 
     private String mIdFacebook;
-    private String mDuration;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
     private String mPlaceName;
     private long mTime;
+    private String mFriendsList;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -61,12 +65,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Map<String, String> data = remoteMessage.getData();
 
             mIdFacebook = data.get("idFacebook");
-            mDuration = data.get("durationSender");
             mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
             mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
             mPlaceName = data.get("placeName");
             mTime = Long.parseLong(data.get("time"));
-            sendNotification("Samuel", "Wanna Meetus ?");
+            String username = data.get("username");
+            mFriendsList = data.get("friendsList");
+
+            sendNotification(username, "Wanna Meetus ?");
 
             if (true) {
                 scheduleJob();
@@ -100,11 +106,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = new Intent(this, InvitationResumerActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(ID_FACEBOOK, mIdFacebook);
-        bundle.putString(DURATION, mDuration);
         bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
         bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
         bundle.putString(PLACE_NAME, mPlaceName);
         bundle.putLong(TIME, mTime);
+        bundle.putString(FRIENDS_LIST, mFriendsList);
         intent.putExtras(bundle);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

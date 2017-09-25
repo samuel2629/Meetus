@@ -14,8 +14,8 @@ import java.io.Serializable;
 
 public class User implements Parcelable {
 
-    public String token, idFacebook, name, profilPic;
-    public double latitude, longitude;
+    private String token, idFacebook, name, profilPic;
+    private double latitude, longitude;
 
     public User(){}
 
@@ -29,6 +29,54 @@ public class User implements Parcelable {
 
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getIdFacebook() {
+        return idFacebook;
+    }
+
+    public void setIdFacebook(String idFacebook) {
+        this.idFacebook = idFacebook;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProfilPic() {
+        return profilPic;
+    }
+
+    public void setProfilPic(String profilPic) {
+        this.profilPic = profilPic;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
     protected User(Parcel in) {
         token = in.readString();
         latitude = in.readDouble();
@@ -38,7 +86,7 @@ public class User implements Parcelable {
         profilPic = in.readString();
     }
 
-    public JSONObject getJSONObject() {
+    public JSONObject transformToJsonObject() {
         JSONObject obj = new JSONObject();
         try {
             obj.put("token", token);

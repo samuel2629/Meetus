@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -52,8 +54,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static String mIdFacebook;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.nav_view) NavigationView mNavView;
-    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.container_frameLayout) FrameLayout mFrameLayout;
     @BindView(R.id.pager) ViewPager mViewPager;
     @BindView(R.id.toolbar_title) TextView mToolBarTitle;
@@ -64,35 +64,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     private boolean mAuthFlag;
-    private ImageView mImageProfilNavHeader;
-    private TextView mFullNameNavHeader;
-    private TextView mEmailNavHeader;
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.app_bar_main);
         ButterKnife.bind(this);
-        FontHelper.setCustomTypeface(findViewById(R.id.container_frameLayout));
-        FontHelper.setCustomTypeface(mToolBarTitle);
-
-        View navHeader = mNavView.getHeaderView(0);
-        mImageProfilNavHeader = (ImageView) navHeader.findViewById(R.id.profilPic);
-        mFullNameNavHeader = (TextView) navHeader.findViewById(R.id.nameText);
-        mEmailNavHeader = (TextView) navHeader.findViewById(R.id.emailText);
 
         setSupportActionBar(mToolbar);
+        mToolbar.setElevation(4.0f);
         MainActivity.this.setTitle("");
 
         String title = "Scheduler";
         mToolBarTitle.setText(title);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, mDrawerLayout, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        mNavView.setNavigationItemSelectedListener(this);
 
         if(isNetworkAvailable()) {
             login();
@@ -143,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void getFacebookDataInfo() {
         if(AccessToken.getCurrentAccessToken() != null){
             Bundle parameters = new Bundle();
-            parameters.putString("fields", "id,name,email,picture.type(large)");
+            parameters.putString("fields", "id,name,picture.type(large)");
             new GraphRequest(AccessToken.getCurrentAccessToken(),
                     "/me", parameters, HttpMethod.GET, new GraphRequest.Callback() {
                 @Override
@@ -168,38 +153,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void setUserDataUI(JSONObject data) throws JSONException {
         String name = data.getString("name");
         mIdFacebook = data.getString("id");
-        String mail = data.getString("email");
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
 
-        Glide.with(MainActivity.this).load(profilPic)
-                .thumbnail(0.75f)
-                .apply(RequestOptions
-                        .bitmapTransform(new CircleTransform(MainActivity.this)))
-                .apply(RequestOptions
-                        .diskCacheStrategyOf(DiskCacheStrategy.ALL))
-                .into(mImageProfilNavHeader);
-
-        mFullNameNavHeader.setText(name);
-        mEmailNavHeader.setText(mail);
-
-        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 3, mIdFacebook, name, profilPic);
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, mIdFacebook, name, profilPic);
         mViewPager.setAdapter(pageAdapter);
         mViewPager.setCurrentItem(1, true);
-        mViewPager.setOffscreenPageLimit(3);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 if(position == 1){
                     mToolBarTitle.setText("Scheduler");
                 } else if(position == 0){
-                    mToolBarTitle.setText("Personal Calendar");
+                    mToolBarTitle.setText("Calendar");
                 }
             }
 
             @Override
             public void onPageSelected(int position) {
-
             }
 
             @Override
@@ -208,6 +179,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
     }
+
+
 
     /**Lifecycle Methods **/
 
@@ -249,10 +222,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void setCurrentItem(int item, boolean smoothScroll) {
-        mViewPager.setCurrentItem(item, smoothScroll);
     }
 
     @Override

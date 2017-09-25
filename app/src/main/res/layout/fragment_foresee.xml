@@ -4,7 +4,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:nestedScrollingEnabled="true"
-            android:background="@color/colorSecondary"
+            android:background="@color/colorPrimaryLight"
             xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
@@ -30,7 +30,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#ECEFF1"
+                android:background="@color/colorBackground"
                 android:orientation="vertical"
                 tools:context="com.silho.ideo.meetus.MainActivity">
 
@@ -125,7 +125,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#ECEFF1"
+                android:background="@color/colorBackground"
                 android:orientation="vertical"
                 tools:context="com.silho.ideo.meetus.MainActivity">
 
@@ -208,25 +208,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="360dp"/>
 
-                <android.support.design.widget.FloatingActionButton
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="16dp"
-                    android:id="@+id/seeMoreFriendsFAB"
-                    app:backgroundTint="@color/colorPrimary"
-                    app:elevation="2dp"
-                    app:fabSize="normal"
-                    app:srcCompat="@drawable/ic_add_black_24dp"
-                    app:rippleColor="@color/colorSecondary"/>
-
         </FrameLayout>
 
         <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="@color/colorSecondary"
+                android:background="@color/colorPrimaryLight"
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:layout_marginTop="8dp"
@@ -240,16 +228,6 @@
                     app:fabSize="normal"
                     app:rippleColor="@color/colorSecondary"
                     app:srcCompat="@drawable/ic_event_black_24dp"/>
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/nowButton"
-                    style="@style/TypeFABTheme"
-                    app:backgroundTint="@color/colorPrimary"
-                    app:elevation="2dp"
-                    app:fabSize="normal"
-                    app:rippleColor="@color/colorSecondary"
-                    app:srcCompat="@drawable/ic_whatshot_black_24dp"/>
-
             </LinearLayout>
 
     </LinearLayout>

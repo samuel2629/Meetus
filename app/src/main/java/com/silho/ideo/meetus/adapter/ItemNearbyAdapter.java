@@ -50,7 +50,7 @@ public class ItemNearbyAdapter extends RecyclerView.Adapter<ItemNearbyAdapter.It
 
     @Override
     public void onBindViewHolder(ItemNearbyViewHolder holder, int position) {
-        FontHelper.setCustomTypeface(holder.itemView);
+        //FontHelper.setCustomTypeface(holder.itemView);
         holder.bindPlace(mPlaceNearby.get(position));
     }
 

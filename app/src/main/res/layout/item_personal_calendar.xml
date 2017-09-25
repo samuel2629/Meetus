@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
-    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
     app:cardElevation="2dp"
     app:cardCornerRadius="8dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -14,6 +14,17 @@
                       android:orientation="horizontal"
                       android:layout_width="match_parent"
                       android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/confirmedDateImageView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:paddingStart="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="0dp"
+                android:paddingEnd="0dp"
+                app:srcCompat="@drawable/ic_fiber_manual_record_red_24dp"
+                android:layout_weight="0.25"/>
 
             <TextView
                 android:id="@+id/dateTextView"
@@ -44,7 +55,7 @@
                     android:id="@+id/timeTextView"
                     android:textSize="16sp"
                     android:textColor="@color/colorSecondary"
-                    android:text="At : 15:30"
+                    android:text="mond. 17 Sept. 2017 17:00"
                     android:fontFamily="sans-serif-smallcaps"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
@@ -56,7 +67,18 @@
                     android:ellipsize="end"
                     android:fontFamily="sans-serif-smallcaps"
                     android:maxLines="1"
-                    android:text="Place : Le David Brasserie"
+                    android:text="Le David Brasserie"
+                    android:textColor="@color/colorSecondary"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/friendsTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-smallcaps"
+                    android:maxLines="1"
+                    android:text="David Johnson, Eleanor Soraya, Luc"
                     android:textColor="@color/colorSecondary"
                     android:textSize="16sp"/>
 

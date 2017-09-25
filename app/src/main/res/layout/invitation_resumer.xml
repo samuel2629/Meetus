@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/colorSecondary"
+    android:background="@color/colorPrimaryLight"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 <android.support.v7.widget.CardView
     android:layout_width="match_parent"
+    android:background="@color/colorSecondary"
     android:layout_margin="8dp"
     app:cardElevation="2dp"
     app:cardCornerRadius="8dp"
@@ -17,6 +19,7 @@
 <LinearLayout
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
+              android:background="@color/colorSecondary"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
@@ -24,7 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="4">
-
 
         <fragment
             android:id="@+id/map"
@@ -83,48 +85,88 @@
 
     </FrameLayout>
 
-    <TextView
-        android:layout_marginTop="2dp"
-        android:id="@+id/dateTextView"
+        <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="6dp"
-        android:text="--"
-        android:fontFamily="sans-serif-smallcaps"
-        android:textColor="#000000"
-        android:textSize="18sp"/>
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/placeTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="6dp"
-        android:fontFamily="sans-serif-smallcaps"
-        android:gravity="center"
-        android:text="--"
-        android:textColor="#000000"
-        android:textSize="18sp"/>
+        <TextView
+            android:id="@+id/placeTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:gravity="center"
+            android:background="@color/colorAccent"
+            android:fontFamily="sans-serif-smallcaps"
+            android:text="--"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"/>
 
-    <TextView
-        android:id="@+id/durationTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="6dp"
-        android:layout_marginBottom="2dp"
-        android:fontFamily="sans-serif-smallcaps"
-        android:gravity="center"
-        android:text="--"
-        android:textColor="#000000"
-        android:textSize="18sp"/>
+        <TextView
+            android:id="@+id/dateTextView"
+            android:background="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:gravity="center"
+            android:text="--"
+            android:fontFamily="sans-serif-smallcaps"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerViewInvitation"
+        <TextView
+            android:id="@+id/durationTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:gravity="center"
+            android:background="@color/colorAccent"
+            android:fontFamily="sans-serif-smallcaps"
+            android:layout_marginBottom="1dp"
+            android:text="--"
+            android:textColor="@color/colorSecondary"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/frameLayoutInvitation"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"/>
+        android:layout_weight="3">
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerViewInvitation"
+            android:background="@color/colorAccent"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/accept_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundTint="@color/colorPrimary"
+            app:elevation="2dp"
+            app:fabSize="mini"
+            app:rippleColor="@color/colorSecondary"
+            app:srcCompat="@drawable/ic_done_black_24dp"
+            android:layout_margin="16dp"
+            android:layout_gravity="bottom|end"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/decline_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundTint="@color/colorPrimaryLight"
+            app:elevation="2dp"
+            app:fabSize="mini"
+            app:rippleColor="@color/colorPrimary"
+            app:srcCompat="@drawable/ic_clear_black_24dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="64dp"
+            android:layout_gravity="bottom|end"/>
+    </FrameLayout>
 
 </LinearLayout>
 </android.support.v7.widget.CardView>

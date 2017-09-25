@@ -2,7 +2,6 @@ package com.silho.ideo.meetus.fragments;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -43,7 +42,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -62,7 +60,6 @@ import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
-import com.silho.ideo.meetus.utils.FontHelper;
 import com.silho.ideo.meetus.utils.WorkaroundMapFragment;
 
 import org.json.JSONArray;
@@ -76,7 +73,6 @@ import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 import static android.app.Activity.RESULT_OK;
-import static com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService.ID_FACEBOOK;
 
 /**
  * Created by Samuel on 01/08/2017.
@@ -119,12 +115,8 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     FloatingActionButton mFABDriving;
     @BindView(R.id.walkingFAB)
     FloatingActionButton mFABWalking;
-    @BindView(R.id.seeMoreFriendsFAB)
-    FloatingActionButton mFABMoreFriends;
     @BindView(R.id.scheduleButton)
     FloatingActionButton mFABScheduleButton;
-    @BindView(R.id.nowButton)
-    FloatingActionButton mFABNowButton;
 
     private GoogleApiClient mClient;
     private PlaceNearbyCreator mPlaceNearbyCreator;
@@ -154,14 +146,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_foresee, container, false);
-        FontHelper.setCustomTypeface(view);
+        //FontHelper.setCustomTypeface(view);
         ButterKnife.bind(this, view);
 
         hashMap = new HashMap<>();
 
         mFriend = new ArrayList<>();
-        mFABNowButton.setVisibility(View.GONE);
-        mFABMoreFriends.setVisibility(View.GONE);
 
         mToken = FirebaseInstanceId.getInstance().getToken();
         mOwnerProfilPic = getArguments().getString(PageAdapter.URL_PROFIL_PIC);
@@ -413,13 +403,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         params.put("placeName", mNamePlace);
         params.put("time", mTime);
 
-        params.put("duration", mDurationTextView.getText().toString());
         params.put("idFacebook", mIdFacebook);
         params.put("username", mUsername);
 
         JSONArray array = new JSONArray();
         for(int i=0; i<mFriend.size(); i++){
-            array.put(mFriend.get(i).getJSONObject());
+            array.put(mFriend.get(i).transformToJsonObject());
         }
 
         params.put("friendsList", array);
@@ -515,11 +504,14 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 mTime = componentTimeToTimestamp(mYear, mMonth, mDay, hour, minute);
                 if(mFriend.size() == 0){
                     DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
-                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination);
+                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, null);
                     databaseReference.push().setValue(scheduledEvent);
                     Toast.makeText(getActivity(), "Event Scheduled.", Toast.LENGTH_SHORT).show();
                 } else {
                     postRequestToServer();
+                    DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
+                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, false, mFriend);
+                    databaseReference.push().setValue(scheduledEvent);
                 }
             }
         }
@@ -537,17 +529,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 }
 
                 mFriend = new ArrayList<>(hashMap.values());
-
-                mFABNowButton.setVisibility(View.VISIBLE);
-                mFABNowButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if(mLatitudeDestination == 0.0 || mLongitudeDestination == 0.0){
-                            Toast.makeText(getActivity(), "A Destination Is Required.", Toast.LENGTH_SHORT).show();
-                        }
-                        postRequestToServer();
-                    }
-                });
             }
         }
     }
@@ -581,7 +562,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         if (mClient.isConnected()) {
             mClient.disconnect();
         }
-
         SharedPreferences preferences = getContext().getSharedPreferences(Profile.getCurrentProfile().getId(), 0);
         preferences.edit().clear().apply();
 

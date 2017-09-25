@@ -11,10 +11,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -27,11 +33,22 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.adapter.FriendsAdapter;
 import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
 import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.model.User;
+import com.silho.ideo.meetus.utils.FontHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,6 +60,7 @@ import butterknife.ButterKnife;
 public class InvitationResumerActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    @BindView(R.id.root) RelativeLayout mRelativeLayout;
     @BindView(R.id.recyclerViewInvitation) RecyclerView mRecyclerView;
     @BindView(R.id.bikingFAB) FloatingActionButton mFABBiking;
     @BindView(R.id.transportFAB) FloatingActionButton mFABTransport;
@@ -51,46 +69,127 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
     @BindView(R.id.durationTextView) TextView mDurationTextView;
     @BindView(R.id.placeTextView) TextView mPlaceNameTextView;
     @BindView(R.id.dateTextView) TextView mDateTextView;
+    @BindView(R.id.frameLayoutInvitation) FrameLayout mFrameLayout;
+    @BindView(R.id.accept_button) FloatingActionButton mAcceptButton;
+    @BindView(R.id.decline_button) FloatingActionButton mDeclineButton;
 
     private RoutesCreator mRoutesCreator;
     private GoogleApiClient mClient;
     private double mMyLatitude;
     private double mMyLongitude;
-    private String mIdFacebook;
-    private String mDurationSender;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
     private TrajectCreator mTrajectCreator;
     private String mPlaceName;
     private long mTime;
+    private String mIdFacebook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.invitation_resumer);
         ButterKnife.bind(this);
+        //FontHelper.setCustomTypeface(mRelativeLayout);
+
         buildGoogleApiClient();
 
-        mRecyclerView.setVisibility(View.GONE);
-
-        if(getIntent().getExtras() != null){
-            mIdFacebook = getIntent().getExtras().getString(MyFirebaseMessagingService.ID_FACEBOOK);
-            mDurationSender = getIntent().getExtras().getString(MyFirebaseMessagingService.DURATION);
+        if(getIntent().getExtras() != null) {
             mLatitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LATITUDE_DEST);
             mLongitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LONGITUDE_DEST);
             mPlaceName = getIntent().getExtras().getString(MyFirebaseMessagingService.PLACE_NAME);
             mTime = getIntent().getExtras().getLong(MyFirebaseMessagingService.TIME);
-        }
+            mIdFacebook = getIntent().getExtras().getString(MyFirebaseMessagingService.ID_FACEBOOK);
 
-        String place = "Place : "+ mPlaceName;
-        mPlaceNameTextView.setText(place);
-        mDateTextView.setText(getDate(mTime));
+            ArrayList<User> friendsListInvited = getIntent().getExtras().getParcelableArrayList(MyFirebaseMessagingService.FRIENDS_LIST_INVITED);
+            bindFriendsOnCheckedEvent(friendsListInvited);
+
+            String friendsList = getIntent().getExtras().getString(MyFirebaseMessagingService.FRIENDS_LIST);
+            if (friendsList != null) {
+                try {
+                    bindFriendsOnNotificationReceived(new JSONArray(friendsList));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            String place = "Place : " + mPlaceName;
+            mPlaceNameTextView.setText(place);
+            String date = "Date : " + getDate(mTime * 1000);
+            mDateTextView.setText(date);
+        } else {
+            Toast.makeText(this, "Error. Please Try Again.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void bindFriendsOnCheckedEvent(ArrayList<User> friendsListInvited) {
+        if(friendsListInvited != null) {
+            final ArrayList<FriendsAdapter.FriendItem> friendItems = new ArrayList<>();
+            for (int i = 0; i < friendsListInvited.size(); i++) {
+                    String id = friendsListInvited.get(i).getIdFacebook();
+                    String name =friendsListInvited.get(i).getName();
+                    String image = friendsListInvited.get(i).getProfilPic();
+                    FriendsAdapter.FriendItem friendItem = new FriendsAdapter.FriendItem(id, name, image);
+                    friendItems.add(friendItem);
+            }
+            mAcceptButton.setVisibility(View.GONE);
+            mDeclineButton.setVisibility(View.GONE);
+            FriendsAdapter adapter = new FriendsAdapter(friendItems);
+            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+            mRecyclerView.setLayoutManager(layoutManager);
+            mRecyclerView.setAdapter(adapter);
+            mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
+                    DividerItemDecoration.VERTICAL));
+    } else {
+        mFrameLayout.setVisibility(View.GONE);
+    }
+    }
+
+    private void bindFriendsOnNotificationReceived(JSONArray FriendList) {
+        if(FriendList != null) {
+            final ArrayList<FriendsAdapter.FriendItem> friendItems = new ArrayList<>();
+            for (int i = 0; i < FriendList.length(); i++) {
+                try {
+                    String id = FriendList.getJSONObject(i).getString("idFacebook");
+                    String name = FriendList.getJSONObject(i).getString("name");
+                    String image = FriendList.getJSONObject(i).getString("profilPic");
+                    FriendsAdapter.FriendItem friendItem = new FriendsAdapter.FriendItem(id, name, image);
+                    friendItems.add(friendItem);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(mIdFacebook);
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    String profilPic = user.getProfilPic();
+                    String name = user.getName();
+                    FriendsAdapter.FriendItem friendItem= new FriendsAdapter.FriendItem(mIdFacebook, name, profilPic);
+                    friendItems.add(friendItem);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            FriendsAdapter adapter = new FriendsAdapter(friendItems);
+            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+            mRecyclerView.setLayoutManager(layoutManager);
+            mRecyclerView.setAdapter(adapter);
+            mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
+                    DividerItemDecoration.VERTICAL));
+        } else {
+            mFrameLayout.setVisibility(View.GONE);
+        }
     }
 
     private String getDate(long time) {
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTimeInMillis(time);
-        return DateFormat.format("EEE d MMM yyyy HH:mm", cal).toString();
+        return DateFormat.format("EEE d MMM yyyy at HH:mm", cal).toString();
     }
 
     private void setRoadItinerary(LatLng latLng, String mode) {

@@ -16,10 +16,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.MainActivity;
-import com.silho.ideo.meetus.adapter.PersonalCalendarAdapter;
+import com.silho.ideo.meetus.adapter.PersonalCalendarAdapterSectioned;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 
 import java.util.ArrayList;
@@ -36,33 +35,35 @@ public class PersonalCalendarFragment extends Fragment {
     @BindView(R.id.reyclerViewCalendar)
     RecyclerView mRecyclerView;
 
-    private PersonalCalendarAdapter adapter;
     private DatabaseReference mDatabaseReference;
+    private ChildEventListener mChildEventListener;
+    private PersonalCalendarAdapterSectioned mAdapterSectioned;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_personal_calendar, container, false);
+        final View view = inflater.inflate(R.layout.fragment_personal_calendar, container, false);
         ButterKnife.bind(this, view);
 
         setHasOptionsMenu(true);
 
+        mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<ScheduledEvent>(),System.currentTimeMillis()/1000L);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        adapter = new PersonalCalendarAdapter(getContext(), new ArrayList<ScheduledEvent>());
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setAdapter(adapter);
-        mDatabaseReference =  FirebaseDatabase.getInstance().getReference().child("users")
+        mRecyclerView.setAdapter(mAdapterSectioned);
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("users")
                 .child(MainActivity.mIdFacebook).child("scheduledEvent");
 
-        ChildEventListener childEventListener = new ChildEventListener() {
+        mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 ScheduledEvent scheduledEvent = dataSnapshot.getValue(ScheduledEvent.class);
-                adapter.add(scheduledEvent);
+                mAdapterSectioned.add(scheduledEvent);
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
             }
 
             @Override
@@ -80,10 +81,17 @@ public class PersonalCalendarFragment extends Fragment {
 
             }
         };
-        adapter.notifyDataSetChanged();
-        mDatabaseReference.orderByChild("tp").addChildEventListener(childEventListener);
-
         return view;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser && mAdapterSectioned != null){
+            mAdapterSectioned.clear();
+            mDatabaseReference.orderByChild("tp").addChildEventListener(mChildEventListener);
+            mAdapterSectioned.notifyDataSetChanged();
+        }
     }
 
     @Override
