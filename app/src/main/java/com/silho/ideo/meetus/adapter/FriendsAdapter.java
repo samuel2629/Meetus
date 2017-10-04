@@ -98,7 +98,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final FriendsAdapter.ViewHolder holder, int position) {
-        //FontHelper.setCustomTypeface(holder.mView);
+        FontHelper.setCustomTypeface(holder.mView);
         final FriendItem friendItem = mValues.get(position);
         holder.mName.setText(friendItem.name);
         displayProfilePic(holder.mProfilePic, friendItem.image);
@@ -164,7 +164,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private void updateFollowButton(LinearLayout buttonView, ImageView imageView, TextView textView, boolean isFollowing, Context c) {
         if (isFollowing) {
-            buttonView.setBackgroundResource(R.color.colorSecondary);
+            buttonView.setBackgroundResource(R.color.colorFade);
             textView.setTextColor(ContextCompat.getColor(c, R.color.colorPrimary));
         }
         else {

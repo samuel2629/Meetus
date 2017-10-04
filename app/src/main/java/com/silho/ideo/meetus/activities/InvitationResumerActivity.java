@@ -22,6 +22,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.Profile;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -38,12 +39,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.adapter.FriendsAdapter;
 import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
 import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
 
@@ -53,9 +58,11 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cz.msebera.android.httpclient.Header;
 
 public class InvitationResumerActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -83,15 +90,18 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
     private String mPlaceName;
     private long mTime;
     private String mIdFacebook;
+    private JSONArray mFriendList;
+    private String mIdFacebookCurrent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.invitation_resumer);
         ButterKnife.bind(this);
-        //FontHelper.setCustomTypeface(mRelativeLayout);
+        FontHelper.setCustomTypeface(mRelativeLayout);
 
         buildGoogleApiClient();
+        mIdFacebookCurrent = Profile.getCurrentProfile().getId();
 
         if(getIntent().getExtras() != null) {
             mLatitudeDestination = getIntent().getExtras().getDouble(MyFirebaseMessagingService.LATITUDE_DEST);
@@ -116,8 +126,8 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
             mPlaceNameTextView.setText(place);
             String date = "Date : " + getDate(mTime * 1000);
             mDateTextView.setText(date);
-        } else {
-            Toast.makeText(this, "Error. Please Try Again.", Toast.LENGTH_SHORT).show();
+
+
         }
     }
 
@@ -140,18 +150,23 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
             mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                     DividerItemDecoration.VERTICAL));
     } else {
-        mFrameLayout.setVisibility(View.GONE);
+            mFrameLayout.setVisibility(View.GONE);
+            mAcceptButton.setVisibility(View.GONE);
+            mDeclineButton.setVisibility(View.GONE);
     }
     }
 
-    private void bindFriendsOnNotificationReceived(JSONArray FriendList) {
-        if(FriendList != null) {
+    private void bindFriendsOnNotificationReceived(final JSONArray friendList) {
+        if(friendList != null) {
+            mFrameLayout.setVisibility(View.VISIBLE);
+            mAcceptButton.setVisibility(View.VISIBLE);
+            mDeclineButton.setVisibility(View.VISIBLE);
             final ArrayList<FriendsAdapter.FriendItem> friendItems = new ArrayList<>();
-            for (int i = 0; i < FriendList.length(); i++) {
+            for (int i = 0; i < friendList.length(); i++) {
                 try {
-                    String id = FriendList.getJSONObject(i).getString("idFacebook");
-                    String name = FriendList.getJSONObject(i).getString("name");
-                    String image = FriendList.getJSONObject(i).getString("profilPic");
+                    String id = friendList.getJSONObject(i).getString("idFacebook");
+                    String name = friendList.getJSONObject(i).getString("name");
+                    String image = friendList.getJSONObject(i).getString("profilPic");
                     FriendsAdapter.FriendItem friendItem = new FriendsAdapter.FriendItem(id, name, image);
                     friendItems.add(friendItem);
                 } catch (JSONException e) {
@@ -164,10 +179,19 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
+                    friendList.put(user.transformToJsonObject());
+                    mFriendList = friendList;
+                    String id = user.getIdFacebook();
                     String profilPic = user.getProfilPic();
                     String name = user.getName();
-                    FriendsAdapter.FriendItem friendItem= new FriendsAdapter.FriendItem(mIdFacebook, name, profilPic);
+                    FriendsAdapter.FriendItem friendItem= new FriendsAdapter.FriendItem(id, name, profilPic);
                     friendItems.add(friendItem);
+                    FriendsAdapter adapter = new FriendsAdapter(friendItems);
+                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(InvitationResumerActivity.this);
+                    mRecyclerView.setLayoutManager(layoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                    mRecyclerView.addItemDecoration(new DividerItemDecoration(InvitationResumerActivity.this,
+                            DividerItemDecoration.VERTICAL));
                 }
 
                 @Override
@@ -175,21 +199,66 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
 
                 }
             });
-            FriendsAdapter adapter = new FriendsAdapter(friendItems);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-            mRecyclerView.setLayoutManager(layoutManager);
-            mRecyclerView.setAdapter(adapter);
-            mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
-                    DividerItemDecoration.VERTICAL));
+
+            mAcceptButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ArrayList<User> users = new ArrayList<>();
+                    for(FriendsAdapter.FriendItem friendItem:friendItems){
+                        User user = new User();
+                        user.setName(friendItem.getName());
+                        user.setProfilPic(friendItem.getImage());
+                        user.setIdFacebook(friendItem.getId());
+                        users.add(user);
+                    }
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(mIdFacebookCurrent).child("scheduledEvent");
+                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mPlaceName, mLatitudeDestination, mLongitudeDestination, false, users);
+                    databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
+                    finish();
+                }
+            });
+
+            mDeclineButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    postDeclineToServer();
+                    finish();
+                }
+            });
         } else {
             mFrameLayout.setVisibility(View.GONE);
+            mAcceptButton.setVisibility(View.GONE);
+            mDeclineButton.setVisibility(View.GONE);
         }
+    }
+
+    private void postDeclineToServer() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+
+        params.put("time", mTime);
+        params.put("idFacebook", mIdFacebookCurrent);
+
+        params.put("friendList", mFriendList);
+
+        client.post("https://meetusite.herokuapp.com/decline", params,
+                new TextHttpResponseHandler() {
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                        Toast.makeText(InvitationResumerActivity.this, responseString, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private String getDate(long time) {
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTimeInMillis(time);
-        return DateFormat.format("EEE d MMM yyyy at HH:mm", cal).toString();
+        return DateFormat.format("EEE d MMM yyyy 'at' HH:mm", cal).toString();
     }
 
     private void setRoadItinerary(LatLng latLng, String mode) {

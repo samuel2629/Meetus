@@ -34,4 +34,5 @@
     <string name="send">send</string>
     <string name="schedule">schedule</string>
     <string name="renew">renew</string>
+    <string name="date_transition_name">date_transition</string>
 </resources>

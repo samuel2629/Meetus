@@ -1,7 +1,6 @@
 package com.silho.ideo.meetus.activities;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -9,23 +8,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
+import com.evernote.android.job.JobManager;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
@@ -35,7 +27,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.utils.CircleTransform;
+import com.silho.ideo.meetus.firebaseCloudMessaging.DemoSyncJob;
+import com.silho.ideo.meetus.firebaseCloudMessaging.MyJobService;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
@@ -71,6 +64,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_bar_main);
         ButterKnife.bind(this);
+        FontHelper.setCustomTypeface(mFrameLayout);
+        JobManager.create(this).addJobCreator(new MyJobService());
+        DemoSyncJob.scheduleJob();
+        JobManager.instance().getConfig().setAllowSmallerIntervalsForMarshmallow(true);
 
         setSupportActionBar(mToolbar);
         mToolbar.setElevation(4.0f);
@@ -83,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             login();
         }
     }
-
 
     private void login() {
         mAuth = FirebaseAuth.getInstance();
@@ -179,8 +175,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
     }
-
-
 
     /**Lifecycle Methods **/
 

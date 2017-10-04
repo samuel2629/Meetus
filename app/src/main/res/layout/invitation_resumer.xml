@@ -9,6 +9,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 <android.support.v7.widget.CardView
+    android:transitionName="card_transition"
     android:layout_width="match_parent"
     android:background="@color/colorSecondary"
     android:layout_margin="8dp"
@@ -26,7 +27,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4">
+        android:layout_weight="3">
 
         <fragment
             android:id="@+id/map"
@@ -90,42 +91,42 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/placeTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="6dp"
-            android:gravity="center"
-            android:background="@color/colorAccent"
-            android:fontFamily="sans-serif-smallcaps"
-            android:text="--"
-            android:textColor="@color/colorSecondary"
-            android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/dateTextView"
+                android:background="@color/colorBackground"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:gravity="center"
+                android:text="--"
+                android:fontFamily="sans-serif-smallcaps"
+                android:textColor="@color/colorSecondary"
+                android:textSize="16sp"/>
 
-        <TextView
-            android:id="@+id/dateTextView"
-            android:background="@color/colorAccent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="6dp"
-            android:gravity="center"
-            android:text="--"
-            android:fontFamily="sans-serif-smallcaps"
-            android:textColor="@color/colorSecondary"
-            android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/placeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:gravity="center"
+                android:background="@color/colorBackground"
+                android:fontFamily="sans-serif-smallcaps"
+                android:text="--"
+                android:textColor="@color/colorSecondary"
+                android:textSize="16sp"/>
 
-        <TextView
-            android:id="@+id/durationTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="6dp"
-            android:gravity="center"
-            android:background="@color/colorAccent"
-            android:fontFamily="sans-serif-smallcaps"
-            android:layout_marginBottom="1dp"
-            android:text="--"
-            android:textColor="@color/colorSecondary"
-            android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/durationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:gravity="center"
+                android:background="@color/colorBackground"
+                android:fontFamily="sans-serif-smallcaps"
+                android:layout_marginBottom="1dp"
+                android:text="--"
+                android:textColor="@color/colorSecondary"
+                android:textSize="16sp"/>
     </LinearLayout>
 
     <FrameLayout
@@ -136,38 +137,49 @@
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerViewInvitation"
-            android:background="@color/colorAccent"
+            android:background="@color/colorBackground"
             android:layout_gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:background="@color/colorBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
+
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/accept_button"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             app:backgroundTint="@color/colorPrimary"
             app:elevation="2dp"
             app:fabSize="mini"
+            android:layout_gravity="center"
             app:rippleColor="@color/colorSecondary"
             app:srcCompat="@drawable/ic_done_black_24dp"
-            android:layout_margin="16dp"
-            android:layout_gravity="bottom|end"/>
+            android:layout_margin="16dp"/>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/decline_button"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            app:backgroundTint="@color/colorPrimaryLight"
+            app:backgroundTint="@color/colorPrimary"
             app:elevation="2dp"
             app:fabSize="mini"
+            android:layout_gravity="center"
+            android:layout_margin="16dp"
             app:rippleColor="@color/colorPrimary"
-            app:srcCompat="@drawable/ic_clear_black_24dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="64dp"
-            android:layout_gravity="bottom|end"/>
-    </FrameLayout>
+            app:srcCompat="@drawable/ic_clear_black_24dp"/>
 
+
+    </LinearLayout>
 </LinearLayout>
 </android.support.v7.widget.CardView>
 </RelativeLayout>

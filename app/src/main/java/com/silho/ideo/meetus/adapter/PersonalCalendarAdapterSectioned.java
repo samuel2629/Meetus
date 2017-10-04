@@ -1,10 +1,16 @@
 package com.silho.ideo.meetus.adapter;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -14,11 +20,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
+import com.silho.ideo.meetus.utils.FontHelper;
 import com.truizlop.sectionedrecyclerview.SimpleSectionedAdapter;
 
 import org.json.JSONArray;
@@ -40,6 +51,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     private long mActualTime;
     private ArrayList<ScheduledEvent> mTodayEvents;
     private ArrayList<ScheduledEvent> mTomorrowEvents;
+    private DatabaseReference mDatabase;
 
     public PersonalCalendarAdapterSectioned(Context context, ArrayList<ScheduledEvent> scheduledEvents, long actualTime){
         mContext = context;
@@ -48,7 +60,6 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         mTodayEvents = new ArrayList<>();
         mTomorrowEvents = new ArrayList<>();
     }
-
 
     @Override
     protected int getLayoutResource() {
@@ -67,12 +78,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
                 if(mTodayEvents.isEmpty()){
                     return "Nothing Scheduled For Today.";
                 }
-                return "Today";
+                return "Within 24 Hours";
             case 1:
                 if(mTomorrowEvents.isEmpty()){
                     return null;
                 }
-                return "Tommorrow";
+                return "The Next Day";
             case 2:
                 if(mScheduledEvents.isEmpty()){
                     return null;
@@ -109,8 +120,50 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     }
 
     @Override
-    protected void onBindItemViewHolder(ViewHolder holder, int section, int position) {
+    protected void onBindItemViewHolder(ViewHolder holder, final int section, final int position) {
         holder.bindEvent(section, position);
+        FontHelper.setCustomTypeface(holder.itemView);
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                deleteDialogFragment(section, position).show();
+                return true;
+            }
+        });
+    }
+
+    private Dialog deleteDialogFragment(final int section, final int position) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Delete");
+        builder.setMessage("Are you sure ?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(MainActivity.mIdFacebook).child("scheduledEvent");
+                if(section == 0){
+                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTp())).removeValue();
+                    mTodayEvents.remove(position);
+                    notifyDataSetChanged();
+                } else if (section == 1){
+                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTp())).removeValue();
+                    mTomorrowEvents.remove(position);
+                    notifyDataSetChanged();
+                } else {
+                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTp())).removeValue();
+                    mScheduledEvents.remove(position);
+                    notifyDataSetChanged();
+                }
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        return builder.create();
     }
 
     public void add(ScheduledEvent scheduledEvent){
@@ -130,10 +183,11 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         mScheduledEvents.clear();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private TextView mDateView, mTimeView, mPlaceNameView, mFriendsTextView;
         private ImageView mImageView;
+        private CardView mCardView;
         private long mTime;
         private double mLatDest, mLongDest;
         private String mPlaceName;
@@ -144,14 +198,15 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         public ViewHolder(View itemView) {
             super(itemView);
 
+            mCardView = (CardView) itemView.findViewById(R.id.card_item_calendar);
             mFriendsTextView = (TextView) itemView.findViewById(R.id.friendsTextView);
             mImageView = (ImageView) itemView.findViewById(R.id.confirmedDateImageView);
             mDateView = (TextView) itemView.findViewById(R.id.dateTextView);
             mTimeView = (TextView) itemView.findViewById(R.id.timeTextView);
             mPlaceNameView = (TextView) itemView.findViewById(R.id.placeTextView);
 
+
             itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
         }
 
         public void bindEvent(ScheduledEvent scheduledEvent) {
@@ -191,7 +246,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         private String getDate(long time) {
             Calendar cal = GregorianCalendar.getInstance();
             cal.setTimeInMillis(time);
-            return DateFormat.format("EEE d MMM yyyy HH:mm", cal).toString();
+            return DateFormat.format("EEE d MMM yyyy 'at' HH:mm", cal).toString();
         }
 
         private String getDayAndMonth(long time) {
@@ -210,7 +265,13 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             if(mFriends != null){
                 intent.putExtra(MyFirebaseMessagingService.FRIENDS_LIST_INVITED, mFriends);
             }
-            mContext.startActivity(intent);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                Bundle optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        (Activity) mContext,mCardView,"card_transition").toBundle();
+                mContext.startActivity(intent, optionsCompat);
+            } else {
+                mContext.startActivity(intent);
+            }
         }
 
         public void bindEvent(int section, int position) {
@@ -221,33 +282,6 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             } else {
                 bindEvent(mScheduledEvents.get(position));
             }
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            deleteDialogFragment().show();
-            return true;
-        }
-
-        private Dialog deleteDialogFragment() {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Delete");
-            builder.setMessage("Are you sure ?");
-
-            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-
-                }
-            });
-
-            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                }
-            });
-            return builder.create();
         }
     }
 }

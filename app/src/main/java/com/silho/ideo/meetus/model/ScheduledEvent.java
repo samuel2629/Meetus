@@ -4,10 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.silho.ideo.meetus.adapter.FriendsAdapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Samuel on 01/08/2017.
@@ -15,6 +17,7 @@ import java.util.Date;
 
 public class ScheduledEvent implements Parcelable{
 
+    private List<FriendsAdapter.FriendItem> mFriendItems;
     private Double mLat, mLong;
     private String mPlaceName;
     private long mTp;

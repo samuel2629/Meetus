@@ -10,17 +10,21 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.facebook.Profile;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
 
 import com.firebase.jobdispatcher.Job;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.activities.InvitationResumerActivity;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.Map;
 
@@ -48,61 +52,59 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // [START_EXCLUDE]
-        // There are two types of messages data messages and notification messages. Data messages are handled
-        // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
-        // traditionally used with GCM. Notification messages are only recei  ved here in onMessageReceived when the app
-        // is in the foreground. When the app is in the background an automatically generated notification is displayed.
-        // When the user taps on the notification they are returned to the app. Messages containing both notification
-        // and data payloads are treated as notification messages. The Firebase console always sends notification
-        // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
-        // [END_EXCLUDE]
-
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            Map<String, String> data = remoteMessage.getData();
+            final Map<String, String> data = remoteMessage.getData();
 
-            mIdFacebook = data.get("idFacebook");
-            mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
-            mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
-            mPlaceName = data.get("placeName");
-            mTime = Long.parseLong(data.get("time"));
-            String username = data.get("username");
-            mFriendsList = data.get("friendsList");
+            if(data.size() == 2){
+                mIdFacebook = data.get("idFacebook");
+                mTime = Long.parseLong(data.get("time"));
+                if(mIdFacebook.equals(Profile.getCurrentProfile().getId())){
+                    return;
+                } else {
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance()
+                            .getReference().child("users").child(Profile.getCurrentProfile().getId())
+                            .child("scheduledEvent").child(String.valueOf(mTime)).child("users");
+                    Query query = databaseReference.orderByChild("idFacebook").equalTo(mIdFacebook);
+                    query.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                String user = String.valueOf(snapshot.child("name").getValue());
+                                canceledFriendNotification(user);
+                                snapshot.getRef().removeValue();
+                            }
+                        }
 
-            sendNotification(username, "Wanna Meetus ?");
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-            if (true) {
-                scheduleJob();
+                        }
+                    });
+                }
+
             } else {
-                handleNow();
-            }
+                mIdFacebook = data.get("idFacebook");
+                mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
+                mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
+                mPlaceName = data.get("placeName");
+                mTime = Long.parseLong(data.get("time"));
+                String username = data.get("username");
+                mFriendsList = data.get("friendsList");
 
+                eventNotification(username, "Meetus");
+            }
         }
 
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            eventNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
         }
     }
 
-    private void scheduleJob() {
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-
-        Job myJob = dispatcher.newJobBuilder()
-                .setService(MyJobService.class)
-                .setTag("my-job-tag")
-                .build();
-        dispatcher.schedule(myJob);
-    }
-
-    private void handleNow() {
-        Log.d(TAG, "Short lived task is done.");
-    }
-
-    private void sendNotification(String messageTitle, String messageBody) {
+    private void eventNotification(String messageTitle, String messageBody) {
         Intent intent = new Intent(this, InvitationResumerActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(ID_FACEBOOK, mIdFacebook);
@@ -116,7 +118,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_free_breakfast_black_24dp)
+                .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle(messageTitle)
                 .setContentText(messageBody)
                 .setAutoCancel(true)
@@ -126,6 +128,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+    }
+
+    private void canceledFriendNotification(String name){
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setContentTitle(name)
+                .setContentText(name + " won't participate.")
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
     }
 }

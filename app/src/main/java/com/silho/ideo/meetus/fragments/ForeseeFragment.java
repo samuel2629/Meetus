@@ -42,6 +42,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -60,6 +61,7 @@ import com.silho.ideo.meetus.data.RoutesCreator;
 import com.silho.ideo.meetus.data.TrajectCreator;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
+import com.silho.ideo.meetus.utils.FontHelper;
 import com.silho.ideo.meetus.utils.WorkaroundMapFragment;
 
 import org.json.JSONArray;
@@ -146,7 +148,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_foresee, container, false);
-        //FontHelper.setCustomTypeface(view);
+        FontHelper.setCustomTypeface(view);
         ButterKnife.bind(this, view);
 
         hashMap = new HashMap<>();
@@ -320,9 +322,9 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         if (savedFragment == null) {
             FriendsFragment friendsFragment = new FriendsFragment();
             friendsFragment.setTargetFragment(ForeseeFragment.this, FRIEND_CHOOSED);
-            getChildFragmentManager().beginTransaction().add(R.id.rlfrag, friendsFragment).commit();
+            getFragmentManager().beginTransaction().add(R.id.rlfrag, friendsFragment).commit();
         } else {
-            getChildFragmentManager().beginTransaction().add(R.id.rlfrag, savedFragment).commit();
+            getFragmentManager().beginTransaction().add(R.id.rlfrag, savedFragment).commit();
         }
     }
 
@@ -332,7 +334,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             public void onClick(View view) {
                 DatePickerFragment datePickerFragment = new DatePickerFragment();
                 datePickerFragment.setTargetFragment(ForeseeFragment.this, DATE_PICKER);
-                datePickerFragment.show(getChildFragmentManager(), "datePicker");
+                datePickerFragment.show(getFragmentManager(), "datePicker");
             }
         });
     }
@@ -364,12 +366,16 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                     MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
         }
 
-        mMyLatitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLatitude();
-        mMyLongitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLongitude();
-        setPlaceType(LocationServices.FusedLocationApi.getLastLocation(mClient));
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        LocationServices.getFusedLocationProviderClient(getActivity()).getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                mMyLatitude = location.getLatitude();
+                mMyLongitude = location.getLongitude();
+                setPlaceType(location);
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                mapFragment.getMapAsync(ForeseeFragment.this);
+            }
+        });
 
         mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -387,7 +393,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
             }
         });
-
 
         LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000 * 60);
@@ -475,9 +480,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             String address = String.valueOf(place.getAddress());
             mLatitudeDestination = place.getLatLng().latitude;
             mLongitudeDestination = place.getLatLng().longitude;
-            if (place == null) {
-                return;
-            }
 
             mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView);
             setTransportType(mLatitudeDestination, mLongitudeDestination);
@@ -493,7 +495,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
                 TimePickerFragment timePickerFragment = new TimePickerFragment();
                 timePickerFragment.setTargetFragment(ForeseeFragment.this, TIME_PICKER);
-                timePickerFragment.show(getChildFragmentManager(), "timePicker");
+                timePickerFragment.show(getFragmentManager(), "timePicker");
             }
         }
         if(requestCode == TIME_PICKER){
@@ -505,13 +507,13 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 if(mFriend.size() == 0){
                     DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
                     ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, null);
-                    databaseReference.push().setValue(scheduledEvent);
+                    databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
                     Toast.makeText(getActivity(), "Event Scheduled.", Toast.LENGTH_SHORT).show();
                 } else {
                     postRequestToServer();
                     DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
-                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, false, mFriend);
-                    databaseReference.push().setValue(scheduledEvent);
+                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, mFriend);
+                    databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
                 }
             }
         }

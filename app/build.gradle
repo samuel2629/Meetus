@@ -5,13 +5,14 @@ def GOOGLE_GEO_API_KEY = '"' + GoogleGeoApiKey + '"' ?: '"Api Key not Available.
 def STRING = 'String'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
     defaultConfig {
+        resConfigs "auto"
         vectorDrawables.useSupportLibrary = true
         applicationId "com.silho.ideo.meetus"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -39,22 +40,23 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.4.0'
-    compile 'com.android.support:design:25.4.0'
+    compile 'com.android.support:appcompat-v7:26.0.1'
+    compile 'com.android.support:design:26.0.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
     compile 'com.android.support.constraint:constraint-layout:1.1.0-beta1'
-    compile 'com.google.firebase:firebase-auth:11.0.4'
-    compile 'com.google.firebase:firebase-database:11.0.4'
-    compile 'com.google.firebase:firebase-messaging:11.0.4'
+    compile 'com.firebaseui:firebase-ui-auth:2.4.0'
+    compile 'com.google.firebase:firebase-auth:11.4.0'
+    compile 'com.google.firebase:firebase-database:11.4.0'
+    compile 'com.google.firebase:firebase-messaging:11.4.0'
+    compile 'com.google.android.gms:play-services-places:11.4.0'
+    compile 'com.google.android.gms:play-services-location:11.4.0'
+    compile 'com.google.android.gms:play-services-maps:11.4.0'
     compile 'com.firebase:firebase-jobdispatcher:0.7.0'
-    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile 'com.firebaseui:firebase-ui-auth:2.2.0'
-    compile 'com.google.android.gms:play-services-places:11.0.4'
-    compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-maps:11.0.4'
+    compile 'com.facebook.android:facebook-android-sdk:4.26.0'
     compile 'com.jakewharton:butterknife:8.6.0'
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
     compile 'com.truizlop.sectionedrecyclerview:library:1.2.0'
+    compile 'com.evernote:android-job:1.1.11'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
 }
