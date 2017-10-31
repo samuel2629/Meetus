@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.detectionActivities;
+package com.silho.ideo.meetus.controller.detectionActivityPackages;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -23,6 +23,7 @@ public class DetectedActivitiesIntentService extends IntentService{
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void onHandleIntent(@Nullable Intent intent) {
         ActivityRecognitionResult recognitionResult = ActivityRecognitionResult.extractResult(intent);
         Intent localIntent = new Intent(Constants.BROADCAST_ACTION);

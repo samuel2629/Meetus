@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.fragments;
+package com.silho.ideo.meetus.UI.fragments;
 
 
 
@@ -11,10 +11,7 @@ import android.support.v4.app.DialogFragment;
 
 import com.silho.ideo.meetus.R;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 /**
  * Created by Samuel on 18/08/2017.

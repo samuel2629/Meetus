@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.firebaseCloudMessaging;
+package com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -11,7 +11,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobRequest;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.MainActivity;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -35,9 +35,6 @@ public class DemoSyncJob extends Job{
                 .setAutoCancel(true)
                 .setContentIntent(pi)
                 .setSmallIcon(R.drawable.ic_free_breakfast_black_24dp)
-                .setShowWhen(true)
-                .setColor(Color.RED)
-                .setLocalOnly(true)
                 .build();
 
         NotificationManagerCompat.from(getContext())
@@ -47,9 +44,8 @@ public class DemoSyncJob extends Job{
     }
 
     public static void scheduleJob() {
-        new JobRequest.Builder(TAG)
-                .setPeriodic(TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(2))
-                .setUpdateCurrent(true)
+        new JobRequest.Builder(DemoSyncJob.TAG)
+                .setPeriodic(TimeUnit.MINUTES.toMillis(15), TimeUnit.MINUTES.toMillis(5))
                 .setPersisted(true)
                 .build()
                 .schedule();

@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.geofencing;
+package com.silho.ideo.meetus.controller.geofencingPackages;
 
 import android.app.PendingIntent;
 import android.content.Context;

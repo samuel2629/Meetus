@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.firebaseCloudMessaging;
+package com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,10 +11,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.facebook.Profile;
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
 
-import com.firebase.jobdispatcher.Job;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,7 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
 
 import java.util.Map;
 
@@ -52,15 +49,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-
         if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
             final Map<String, String> data = remoteMessage.getData();
 
             if(data.size() == 2){
                 mIdFacebook = data.get("idFacebook");
                 mTime = Long.parseLong(data.get("time"));
+
                 if(mIdFacebook.equals(Profile.getCurrentProfile().getId())){
                     return;
                 } else {
@@ -99,7 +94,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
             eventNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
         }
     }

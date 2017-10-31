@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.detectionActivities;
+package com.silho.ideo.meetus.controller.detectionActivityPackages;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -14,7 +14,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.DetectedActivity;
 
 /**
  * Created by Samuel on 01/08/2017.

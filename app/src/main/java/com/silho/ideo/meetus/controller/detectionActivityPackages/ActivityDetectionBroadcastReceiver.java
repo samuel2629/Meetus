@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.detectionActivities;
+package com.silho.ideo.meetus.controller.detectionActivityPackages;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

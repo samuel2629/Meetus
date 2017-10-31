@@ -1,7 +1,5 @@
-package com.silho.ideo.meetus.firebaseCloudMessaging;
+package com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 

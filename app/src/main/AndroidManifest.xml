@@ -16,20 +16,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver android:name=".geofencing.GeofenceBroadcastReceiver"/>
-        <receiver android:name=".detectionActivities.ActivityDetectionBroadcastReceiver"/>
+        <receiver android:name=".controller.geofencingPackages.GeofenceBroadcastReceiver"/>
+        <receiver android:name=".controller.detectionActivityPackages.ActivityDetectionBroadcastReceiver"/>
 
         <service
-            android:name=".detectionActivities.DetectedActivitiesIntentService"
+            android:name=".controller.detectionActivityPackages.DetectedActivitiesIntentService"
             android:exported="false"/>
 
-        <service android:name=".firebaseCloudMessaging.MyFirebaseMessagingService">
+        <service android:name=".controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
 
-        <service android:name=".firebaseCloudMessaging.MyFirebaseInstanceIDService">
+        <service android:name=".controller.firebaseCloudMessagingPackages.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
@@ -56,7 +56,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".UI.activities.MainActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -66,7 +66,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activities.InvitationResumerActivity"
+        <activity android:name=".UI.activities.InvitationResumerActivity"
                   android:screenOrientation="portrait"
                   android:theme="@style/AppTheme.NoActionBar">
         </activity>

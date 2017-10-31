@@ -1,13 +1,7 @@
-package com.silho.ideo.meetus.firebaseCloudMessaging;
-
-import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.util.Log;
+package com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
-import com.firebase.jobdispatcher.JobParameters;
-import com.firebase.jobdispatcher.JobService;
 
 /**
  * Created by Samuel on 08/08/2017.

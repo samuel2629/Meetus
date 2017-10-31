@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.fragments;
+package com.silho.ideo.meetus.UI.fragments;
 
 import android.Manifest;
 import android.app.Activity;
@@ -53,12 +53,12 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.MainActivity;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
 import com.silho.ideo.meetus.adapter.PageAdapter;
-import com.silho.ideo.meetus.data.PlaceNearbyCreator;
-import com.silho.ideo.meetus.data.RoutesCreator;
-import com.silho.ideo.meetus.data.TrajectCreator;
+import com.silho.ideo.meetus.parsers.PlaceNearbyCreator;
+import com.silho.ideo.meetus.parsers.RoutesCreator;
+import com.silho.ideo.meetus.parsers.TrajectCreator;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;

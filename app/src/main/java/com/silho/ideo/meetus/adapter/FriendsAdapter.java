@@ -2,17 +2,14 @@ package com.silho.ideo.meetus.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -24,16 +21,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.CircleTransform;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Created by Samuel on 03/08/2017.
@@ -157,8 +151,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             super(view);
 
             mView = view;
-            mName = (TextView) view.findViewById(R.id.name);
-            mProfilePic = (ImageView) view.findViewById(R.id.image);
+            mName = view.findViewById(R.id.name);
+            mProfilePic = view.findViewById(R.id.image);
         }
     }
 
@@ -182,7 +176,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                         .diskCacheStrategyOf(DiskCacheStrategy.ALL))
                 .into(imageView);
     }
-
 
     public void filter(String charText) {
         charText = charText.toLowerCase(Locale.getDefault());

@@ -1,9 +1,8 @@
-package com.silho.ideo.meetus.data;
+package com.silho.ideo.meetus.parsers;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 
@@ -16,7 +15,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 
 /**
  * Created by Samuel on 27/07/2017.

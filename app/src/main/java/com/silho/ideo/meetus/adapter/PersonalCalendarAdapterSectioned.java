@@ -1,14 +1,12 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,21 +16,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.InvitationResumerActivity;
-import com.silho.ideo.meetus.activities.MainActivity;
-import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
+import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
+import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
 import com.truizlop.sectionedrecyclerview.SimpleSectionedAdapter;
-
-import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;

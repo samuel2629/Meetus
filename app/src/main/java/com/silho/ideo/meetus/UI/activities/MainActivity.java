@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.activities;
+package com.silho.ideo.meetus.UI.activities;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -27,8 +27,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.firebaseCloudMessaging.DemoSyncJob;
-import com.silho.ideo.meetus.firebaseCloudMessaging.MyJobService;
+import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.DemoSyncJob;
+import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyJobService;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.app_bar_main);
         ButterKnife.bind(this);
         FontHelper.setCustomTypeface(mFrameLayout);
+
         JobManager.create(this).addJobCreator(new MyJobService());
         DemoSyncJob.scheduleJob();
-        JobManager.instance().getConfig().setAllowSmallerIntervalsForMarshmallow(true);
 
         setSupportActionBar(mToolbar);
         mToolbar.setElevation(4.0f);
@@ -80,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             login();
         }
     }
+
+    /** Data Methods **/
 
     private void login() {
         mAuth = FirebaseAuth.getInstance();
@@ -99,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     .setIsSmartLockEnabled(false)
                                     .setAvailableProviders(Arrays.asList
                                             (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
                                     .setTheme(R.style.LoginTheme)
                                     .build(),
                             RC_SIGN_IN);
@@ -107,8 +109,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         };
     }
-
-    /** Data Methods **/
 
     protected boolean isNetworkAvailable() {
         ConnectivityManager manager = (ConnectivityManager)

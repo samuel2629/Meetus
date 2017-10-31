@@ -1,18 +1,12 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.view.ViewGroup;
 
-import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.fragments.ForeseeFragment;
-import com.silho.ideo.meetus.fragments.FriendsFragment;
-import com.silho.ideo.meetus.fragments.PersonalCalendarFragment;
+import com.silho.ideo.meetus.UI.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
 
 /**
  * Created by Samuel on 16/08/2017.
