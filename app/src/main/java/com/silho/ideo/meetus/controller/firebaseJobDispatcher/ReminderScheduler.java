@@ -1,7 +1,6 @@
-package com.silho.ideo.meetus.fjd;
+package com.silho.ideo.meetus.controller.firebaseJobDispatcher;
 
 import android.content.Context;
-import android.icu.util.TimeUnit;
 import android.support.annotation.NonNull;
 
 import com.firebase.jobdispatcher.Driver;
@@ -15,7 +14,7 @@ import com.firebase.jobdispatcher.Trigger;
  * Created by Samuel on 01/11/2017.
  */
 
-public class Ru {
+public class ReminderScheduler {
 
     public static final int REMINDER_INTERVAL_MINUTES = 1;
     public static final int REMINDER_INTERVAL_SECONDES = (int) (java.util.concurrent.TimeUnit.MINUTES.toSeconds(REMINDER_INTERVAL_MINUTES));

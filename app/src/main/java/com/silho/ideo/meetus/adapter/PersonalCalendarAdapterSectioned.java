@@ -136,15 +136,15 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             public void onClick(DialogInterface dialogInterface, int i) {
                 mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(MainActivity.mIdFacebook).child("scheduledEvent");
                 if(section == 0){
-                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
                     mTodayEvents.remove(position);
                     notifyDataSetChanged();
                 } else if (section == 1){
-                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
                     mTomorrowEvents.remove(position);
                     notifyDataSetChanged();
                 } else {
-                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
                     mScheduledEvents.remove(position);
                     notifyDataSetChanged();
                 }
@@ -161,11 +161,11 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     }
 
     public void add(ScheduledEvent scheduledEvent){
-        if(mActualTime<scheduledEvent.getTp() && scheduledEvent.getTp()<mActualTime+86400){
+        if(mActualTime<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+86400){
             mTodayEvents.add(scheduledEvent);
-        } else if (mActualTime+86400<scheduledEvent.getTp() && scheduledEvent.getTp()<mActualTime+172800){
+        } else if (mActualTime+86400<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+172800){
             mTomorrowEvents.add(scheduledEvent);
-        } else if (scheduledEvent.getTp()>mActualTime+172800){
+        } else if (scheduledEvent.getTimestamp()>mActualTime+172800){
             mScheduledEvents.add(scheduledEvent);
         }
         notifyDataSetChanged();
@@ -204,11 +204,11 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         }
 
         public void bindEvent(ScheduledEvent scheduledEvent) {
-            mTime = scheduledEvent.getTp();
-            mLatDest = scheduledEvent.getLat();
-            mLongDest = scheduledEvent.getLong();
+            mTime = scheduledEvent.getTimestamp();
+            mLatDest = scheduledEvent.getLatitude();
+            mLongDest = scheduledEvent.getLongitude();
             mPlaceName = scheduledEvent.getPlaceName();
-            mIsScheduled = scheduledEvent.isScheduled();
+            mIsScheduled = scheduledEvent.getIsScheduled();
             mFriends = scheduledEvent.getUsers();
 
             if(mIsScheduled){

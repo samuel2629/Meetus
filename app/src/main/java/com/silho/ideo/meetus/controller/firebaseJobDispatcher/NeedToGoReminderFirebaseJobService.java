@@ -1,25 +1,20 @@
-package com.silho.ideo.meetus.fjd;
+package com.silho.ideo.meetus.controller.firebaseJobDispatcher;
 
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.UI.activities.MainActivity;
-import com.silho.ideo.meetus.controller.detectionActivityPackages.Constants;
 import com.silho.ideo.meetus.controller.detectionActivityPackages.DetectionActivity;
 
-import java.lang.ref.WeakReference;
 import java.util.Random;
 
 /**
@@ -35,29 +30,9 @@ public class NeedToGoReminderFirebaseJobService extends JobService {
     @Override
     @SuppressWarnings("unchecked")
     public boolean onStartJob(final JobParameters job) {
-        mBackgoundTask = new AsyncTask() {
-            @Override
-            protected void onPreExecute() {
-                mDetectionActivity = new DetectionActivity(NeedToGoReminderFirebaseJobService.this);
-                mDetectionActivity.getClient().connect();
-            }
-
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                Context context = NeedToGoReminderFirebaseJobService.this;
-                notif(context);
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-                if(mDetectionActivity.getClient().isConnected()){
-                    mDetectionActivity.removeUpdates();
-                }
-                jobFinished(job, false);
-            }
-        };
-        mBackgoundTask.execute();
+        mDetectionActivity = new DetectionActivity(NeedToGoReminderFirebaseJobService.this);
+        mDetectionActivity.getClient().connect();
+        jobFinished(job, false);
 
         return true;
     }

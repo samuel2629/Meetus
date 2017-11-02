@@ -7,9 +7,20 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.facebook.Profile;
+import com.firebase.jobdispatcher.Trigger;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.model.ScheduledEvent;
+import com.silho.ideo.meetus.model.User;
 
 import java.util.ArrayList;
 
@@ -28,17 +39,24 @@ public class DetectedActivitiesIntentService extends IntentService{
     @SuppressWarnings("unchecked")
     protected void onHandleIntent(@Nullable Intent intent) {
         ActivityRecognitionResult recognitionResult = ActivityRecognitionResult.extractResult(intent);
-        //Intent localIntent = new Intent(Constants.BROADCAST_ACTION);
         ArrayList<DetectedActivity> detectedActivities = (ArrayList) recognitionResult.getProbableActivities();
-        Log.i(TAG, "activities detected");
+        getActivityString(detectedActivities.get(0).getType());
 
-        String strStatus = "";
-        for(DetectedActivity thisActivity: detectedActivities){
-            strStatus += getActivityString(thisActivity.getType())+ thisActivity.getConfidence() + "%\n";
-        }
-        Log.i(TAG, strStatus);
-        /*localIntent.putExtra(Constants.ACTIVITY_EXTRA, detectedActivities);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);*/
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("users")
+                .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
+        Query query = database.orderByKey().limitToFirst(1);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
+                Log.i(TAG, "" + se.getTimestamp());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public String getActivityString(int detectedActivityType) {

@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by Samuel on 01/08/2017.
@@ -19,7 +20,8 @@ public class User implements Parcelable {
 
     public User(){}
 
-    public User(String token, double myLatitude, double myLongitude, String idFacebook, String name, String profilPic){
+    public User(String token, double myLatitude, double myLongitude, String idFacebook, String name,
+                String profilPic){
         this.token = token;
         this.latitude = myLatitude;
         this.longitude = myLongitude;

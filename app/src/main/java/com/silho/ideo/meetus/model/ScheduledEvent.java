@@ -3,13 +3,7 @@ package com.silho.ideo.meetus.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.silho.ideo.meetus.adapter.FriendsAdapter;
-
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Samuel on 01/08/2017.
@@ -17,83 +11,79 @@ import java.util.List;
 
 public class ScheduledEvent implements Parcelable{
 
-    private List<FriendsAdapter.FriendItem> mFriendItems;
-    private Double mLat, mLong;
-    private String mPlaceName;
-    private long mTp;
-    private boolean mIsScheduled;
-    private ArrayList<User> mUsers;
-
+    private double latitude, longitude;
+    private String placeName;
+    private long timestamp;
+    private boolean isScheduled;
+    private ArrayList<User> users;
 
     public ScheduledEvent(){}
 
-    public ScheduledEvent(long tp, String placeName, double latitudeDestination,
-                          double longitudeDestination, boolean isScheduled, ArrayList<User> users){
-        mLat = latitudeDestination;
-        mLong = longitudeDestination;
-        mTp = tp;
-        mPlaceName = placeName;
-        mIsScheduled = isScheduled;
-        mUsers = users;
+    public ScheduledEvent(long timestamp, String placeName, double latitude,
+                          double longitude, boolean isScheduled, ArrayList<User> users){
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.timestamp = timestamp;
+        this.placeName = placeName;
+        this.isScheduled = isScheduled;
+        this.users = users;
     }
 
-    public void setLat(Double lat) {
-        mLat = lat;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
-    public void setLong(Double aLong) {
-        mLong = aLong;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public void setPlaceName(String placeName) {
-        mPlaceName = placeName;
+        this.placeName = placeName;
     }
 
-    public void setTp(long tp) {
-        mTp = tp;
-    }
-
-    public void setScheduled(boolean scheduled) {
-        mIsScheduled = scheduled;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public void setUsers(ArrayList<User> users) {
-        mUsers = users;
+        this.users = users;
     }
 
-    public boolean isScheduled() {
-        return mIsScheduled;
+    public boolean getIsScheduled(){
+        return isScheduled;
+    }
+
+    public void setIsScheduled(boolean isScheduled){
+        this.isScheduled = isScheduled;
     }
 
     public ArrayList<User> getUsers() {
-        return mUsers;
+        return users;
     }
 
-    public long getTp() {
-        return mTp;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public Double getLat() {
-        return mLat;
+    public Double getLatitude() {
+        return latitude;
     }
 
-    public Double getLong() {
-        return mLong;
+    public Double getLongitude() {
+        return longitude;
     }
 
     public String getPlaceName() {
-        return mPlaceName;
+        return placeName;
     }
 
-
-
     public ScheduledEvent(Parcel in) {
-        mLat = in.readDouble();
-        mLong = in.readDouble();
-        mPlaceName = in.readString();
-        mTp = in.readLong();
-        mIsScheduled = in.readByte() != 0;
-        in.readTypedList(mUsers, User.CREATOR);
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        placeName = in.readString();
+        timestamp = in.readLong();
+        isScheduled = in.readByte() != 0;
+        in.readTypedList(users, User.CREATOR);
     }
 
     public static final Creator<ScheduledEvent> CREATOR = new Creator<ScheduledEvent>() {
@@ -115,11 +105,11 @@ public class ScheduledEvent implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeDouble(mLat);
-        parcel.writeDouble(mLong);
-        parcel.writeString(mPlaceName);
-        parcel.writeLong(mTp);
-        parcel.writeByte((byte) (mIsScheduled ? 1 : 0));
-        parcel.writeTypedList(mUsers);
+        parcel.writeDouble(latitude);
+        parcel.writeDouble(longitude);
+        parcel.writeString(placeName);
+        parcel.writeLong(timestamp);
+        parcel.writeByte((byte) (isScheduled ? 1 : 0));
+        parcel.writeTypedList(users);
     }
 }
