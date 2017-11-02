@@ -35,6 +35,9 @@ public class DemoSyncJob extends Job{
                 .setAutoCancel(true)
                 .setContentIntent(pi)
                 .setSmallIcon(R.drawable.ic_free_breakfast_black_24dp)
+                .setShowWhen(true)
+                .setColor(Color.RED)
+                .setLocalOnly(true)
                 .build();
 
         NotificationManagerCompat.from(getContext())

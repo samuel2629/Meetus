@@ -27,8 +27,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.controller.detectionActivityPackages.DetectionActivity;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.DemoSyncJob;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyJobService;
+import com.silho.ideo.meetus.fjd.Ru;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
@@ -66,8 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         FontHelper.setCustomTypeface(mFrameLayout);
 
-        JobManager.create(this).addJobCreator(new MyJobService());
-        DemoSyncJob.scheduleJob();
+        Ru.scheduleReminder(this);
 
         setSupportActionBar(mToolbar);
         mToolbar.setElevation(4.0f);

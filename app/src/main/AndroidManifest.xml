@@ -17,7 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <receiver android:name=".controller.geofencingPackages.GeofenceBroadcastReceiver"/>
-        <receiver android:name=".controller.detectionActivityPackages.ActivityDetectionBroadcastReceiver"/>
 
         <service
             android:name=".controller.detectionActivityPackages.DetectedActivitiesIntentService"
@@ -32,6 +31,13 @@
         <service android:name=".controller.firebaseCloudMessagingPackages.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service android:name=".fjd.NeedToGoReminderFirebaseJobService"
+                 android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
             </intent-filter>
         </service>
 
