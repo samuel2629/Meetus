@@ -68,21 +68,50 @@ TrajectCreator.AsyncResponseDuration{
 
         DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("users")
                 .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
-        Query query = database.orderByKey().limitToFirst(1);
+        final Query query = database.orderByKey().limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
-                mTimeNextRdv = se.getTimestamp();
-                mPlaceName = se.getPlaceName();
-                StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
-                        mMyLatitude,
-                        mMyLongitude,
-                        se.getLatitude(),
-                        se.getLongitude(),
-                        mActivityRecognized
-                );
-                new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
+                    ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
+                    if (System.currentTimeMillis() / 1000 > se.getTimestamp()) {
+                        dataSnapshot.getChildren().iterator().next().getRef().removeValue();
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
+                                    ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
+                                    mTimeNextRdv = se.getTimestamp();
+                                    mPlaceName = se.getPlaceName();
+                                    StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
+                                            mMyLatitude,
+                                            mMyLongitude,
+                                            se.getLatitude(),
+                                            se.getLongitude(),
+                                            mActivityRecognized
+                                    );
+                                    new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    } else {
+                        mTimeNextRdv = se.getTimestamp();
+                        mPlaceName = se.getPlaceName();
+                        StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
+                                mMyLatitude,
+                                mMyLongitude,
+                                se.getLatitude(),
+                                se.getLongitude(),
+                                mActivityRecognized
+                        );
+                        new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                    }
+                }
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -126,7 +155,8 @@ TrajectCreator.AsyncResponseDuration{
         String message = "You should get prepared for your next appointment to " + mPlaceName;
         String title = "Meetus Reminder";
         if(mTimeNextRdv != 0.0) {
-            if (((currentTime / 1000 + Long.parseLong(duration)) + 600) >= (mTimeNextRdv - 300)) {
+            if (((currentTime / 1000 + Long.parseLong(duration)) + 600) >= (mTimeNextRdv - 300)
+                    && ((currentTime/1000) + Long.parseLong(duration)) <= mTimeNextRdv) {
                 Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_name)
