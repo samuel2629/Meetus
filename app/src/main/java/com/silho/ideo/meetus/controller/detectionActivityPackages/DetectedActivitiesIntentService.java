@@ -3,12 +3,14 @@ package com.silho.ideo.meetus.controller.detectionActivityPackages;
 import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.location.Location;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
@@ -24,10 +26,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.parsers.TrajectCreator;
 
 import java.util.ArrayList;
+
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.FRIENDS_LIST;
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.LATITUDE_DEST;
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.LONGITUDE_DEST;
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.PLACE_NAME;
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.TIME;
 
 /**
  * Created by Samuel on 27/07/2017.
@@ -43,6 +52,9 @@ TrajectCreator.AsyncResponseDuration{
     private long mTimeNextRdv;
     private String mPlaceName;
     public static final int  NOTIFICATION_ID = 137;
+    private double mLatitudeDestination;
+    private double mLongitudeDestination;
+    private String mFriendsList;
 
     public DetectedActivitiesIntentService() {
         super(TAG);
@@ -83,11 +95,15 @@ TrajectCreator.AsyncResponseDuration{
                                     ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
                                     mTimeNextRdv = se.getTimestamp();
                                     mPlaceName = se.getPlaceName();
+                                    mLatitudeDestination = se.getLatitude();
+                                    mLongitudeDestination = se.getLongitude();
+                                    if(se.getUsers() != null){
+                                    mFriendsList = se.getUsers().toString();}
                                     StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
                                             mMyLatitude,
                                             mMyLongitude,
-                                            se.getLatitude(),
-                                            se.getLongitude(),
+                                            mLatitudeDestination,
+                                            mLongitudeDestination,
                                             mActivityRecognized
                                     );
                                     new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
@@ -102,11 +118,15 @@ TrajectCreator.AsyncResponseDuration{
                     } else {
                         mTimeNextRdv = se.getTimestamp();
                         mPlaceName = se.getPlaceName();
+                        mLatitudeDestination = se.getLatitude();
+                        mLongitudeDestination = se.getLongitude();
+                        if(se.getUsers() != null){
+                            mFriendsList = se.getUsers().toString();}
                         StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
                                 mMyLatitude,
                                 mMyLongitude,
-                                se.getLatitude(),
-                                se.getLongitude(),
+                                mLatitudeDestination,
+                                mLongitudeDestination,
                                 mActivityRecognized
                         );
                         new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
@@ -154,9 +174,19 @@ TrajectCreator.AsyncResponseDuration{
         long currentTime = System.currentTimeMillis();
         String message = "You should get prepared for your next appointment to " + mPlaceName;
         String title = "Meetus Reminder";
-        if(mTimeNextRdv != 0.0) {
+        /*if(mTimeNextRdv != 0.0) {
             if (((currentTime / 1000 + Long.parseLong(duration)) + 600) >= (mTimeNextRdv - 300)
-                    && ((currentTime/1000) + Long.parseLong(duration)) <= mTimeNextRdv) {
+                    && ((currentTime/1000) + Long.parseLong(duration)) <= mTimeNextRdv) {*/
+                Intent intent = new Intent(this, InvitationResumerActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
+        bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
+        bundle.putString(PLACE_NAME, mPlaceName);
+        bundle.putLong(TIME, mTimeNextRdv);
+        if(mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
+        intent.putExtras(bundle);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_name)
@@ -164,6 +194,7 @@ TrajectCreator.AsyncResponseDuration{
                         .setContentText(message)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        .setContentIntent(pendingIntent)
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(message));
 
@@ -173,11 +204,10 @@ TrajectCreator.AsyncResponseDuration{
                 notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
                 DetectionActivity detectionActivity = new DetectionActivity(this);
                 detectionActivity.removeUpdates();
-            }
+            /*}
             else {
                 DetectionActivity detectionActivity = new DetectionActivity(this);
                 detectionActivity.removeUpdates();
-            }
+            }*/
         }
     }
-}
