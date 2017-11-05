@@ -192,12 +192,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mCardView = (CardView) itemView.findViewById(R.id.card_item_calendar);
-            mFriendsTextView = (TextView) itemView.findViewById(R.id.friendsTextView);
-            mImageView = (ImageView) itemView.findViewById(R.id.confirmedDateImageView);
-            mDateView = (TextView) itemView.findViewById(R.id.dateTextView);
-            mTimeView = (TextView) itemView.findViewById(R.id.timeTextView);
-            mPlaceNameView = (TextView) itemView.findViewById(R.id.placeTextView);
+            mCardView = itemView.findViewById(R.id.card_item_calendar);
+            mFriendsTextView = itemView.findViewById(R.id.friendsTextView);
+            mImageView = itemView.findViewById(R.id.confirmedDateImageView);
+            mDateView = itemView.findViewById(R.id.dateTextView);
+            mTimeView = itemView.findViewById(R.id.timeTextView);
+            mPlaceNameView = itemView.findViewById(R.id.placeTextView);
 
 
             itemView.setOnClickListener(this);

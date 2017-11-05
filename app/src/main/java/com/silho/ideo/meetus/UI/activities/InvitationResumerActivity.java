@@ -138,14 +138,25 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
                     FriendsAdapter.FriendItem friendItem = new FriendsAdapter.FriendItem(id, name, image);
                     friendItems.add(friendItem);
             }
-            mAcceptButton.setVisibility(View.GONE);
-            mDeclineButton.setVisibility(View.GONE);
             FriendsAdapter adapter = new FriendsAdapter(friendItems);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
             mRecyclerView.setLayoutManager(layoutManager);
             mRecyclerView.setAdapter(adapter);
             mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                     DividerItemDecoration.VERTICAL));
+            mAcceptButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+                }
+            });
+            mDeclineButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    postDeclineToServer();
+                    finish();
+                }
+            });
     } else {
             mFrameLayout.setVisibility(View.GONE);
             mAcceptButton.setVisibility(View.GONE);
@@ -218,7 +229,6 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
             mDeclineButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
                     postDeclineToServer();
                     finish();
                 }
