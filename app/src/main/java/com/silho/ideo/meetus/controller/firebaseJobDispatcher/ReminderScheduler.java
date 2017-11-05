@@ -16,7 +16,7 @@ import com.firebase.jobdispatcher.Trigger;
 
 public class ReminderScheduler {
 
-    public static final int REMINDER_INTERVAL_MINUTES = 8;
+    public static final int REMINDER_INTERVAL_MINUTES = 1;
     public static final int REMINDER_INTERVAL_SECONDES = (int) (java.util.concurrent.TimeUnit.MINUTES.toSeconds(REMINDER_INTERVAL_MINUTES));
     public static final String REMINDER_JOB_TAG = "need_to_go_reminder_tag";
     private static boolean sInitialized;
