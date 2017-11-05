@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.utils;
+package com.silho.ideo.meetus.parsers;
 
 import com.google.android.gms.maps.model.LatLng;
 

@@ -1,9 +1,8 @@
-package com.silho.ideo.meetus.activities;
+package com.silho.ideo.meetus.UI.activities;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,7 +15,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -44,10 +42,10 @@ import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.adapter.FriendsAdapter;
-import com.silho.ideo.meetus.data.RoutesCreator;
-import com.silho.ideo.meetus.data.TrajectCreator;
-import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
-import com.silho.ideo.meetus.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.parsers.RoutesCreator;
+import com.silho.ideo.meetus.parsers.TrajectCreator;
+import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
+import com.silho.ideo.meetus.UI.fragments.ForeseeFragment;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
@@ -58,7 +56,6 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -141,14 +138,25 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
                     FriendsAdapter.FriendItem friendItem = new FriendsAdapter.FriendItem(id, name, image);
                     friendItems.add(friendItem);
             }
-            mAcceptButton.setVisibility(View.GONE);
-            mDeclineButton.setVisibility(View.GONE);
             FriendsAdapter adapter = new FriendsAdapter(friendItems);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
             mRecyclerView.setLayoutManager(layoutManager);
             mRecyclerView.setAdapter(adapter);
             mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                     DividerItemDecoration.VERTICAL));
+            mAcceptButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+                }
+            });
+            mDeclineButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    postDeclineToServer();
+                    finish();
+                }
+            });
     } else {
             mFrameLayout.setVisibility(View.GONE);
             mAcceptButton.setVisibility(View.GONE);
@@ -221,7 +229,6 @@ public class InvitationResumerActivity extends AppCompatActivity implements OnMa
             mDeclineButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
                     postDeclineToServer();
                     finish();
                 }

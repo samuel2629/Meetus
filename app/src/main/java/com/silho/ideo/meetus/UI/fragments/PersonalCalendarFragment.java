@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.fragments;
+package com.silho.ideo.meetus.UI.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,7 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.MainActivity;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.PersonalCalendarAdapterSectioned;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 

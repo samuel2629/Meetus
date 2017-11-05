@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.detectionActivities;
+package com.silho.ideo.meetus.controller.detectionActivityPackages;
 
 import com.google.android.gms.location.DetectedActivity;
 

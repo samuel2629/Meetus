@@ -1,9 +1,8 @@
-package com.silho.ideo.meetus.data;
+package com.silho.ideo.meetus.parsers;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 
@@ -16,7 +15,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 
 /**
  * Created by Samuel on 27/07/2017.
@@ -25,7 +23,15 @@ import java.util.HashMap;
 public class TrajectCreator {
 
     private Context mContext;
-    private TextView mDurationView;
+    private static TextView mDurationView;
+
+    public interface AsyncResponseDuration {
+        void processFinish(String output);
+    }
+
+    public interface AsyncResponse {
+        void processAlmostFinish(String output);
+    }
 
     public TrajectCreator(Context context, TextView durationView){
         mContext = context;
@@ -59,9 +65,47 @@ public class TrajectCreator {
         return sb;
     }
 
-    private class PlacesTask extends AsyncTask<String, Integer, String> {
+    public static class PlacesTask extends AsyncTask<String, Integer, String> {
 
         String data = null;
+        public AsyncResponse delegate = null;
+
+        public PlacesTask(AsyncResponse delegate){
+            this.delegate = delegate;
+        }
+
+        public PlacesTask(){}
+
+        private String downloadUrl(String strUrl) throws IOException {
+            String data = "";
+            InputStream iStream = null;
+            HttpURLConnection urlConnection = null;
+            try {
+                URL url = new URL(strUrl);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.connect();
+                iStream = urlConnection.getInputStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+                StringBuffer sb = new StringBuffer();
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                data = sb.toString();
+                br.close();
+
+            } catch (Exception e) {
+                Log.d("Exception dwling url", e.toString());
+            } finally {
+                iStream.close();
+                urlConnection.disconnect();
+            }
+            return data;
+        }
+
+
         @Override
         protected String doInBackground(String... url) {
             try {
@@ -76,42 +120,25 @@ public class TrajectCreator {
         protected void onPostExecute(String result) {
             ParserTask parserTask = new ParserTask();
             parserTask.execute(result);
-        }
-    }
-
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.connect();
-            iStream = urlConnection.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-            StringBuffer sb = new StringBuffer();
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
+            if(delegate != null){
+                delegate.processAlmostFinish(result);
             }
-
-            data = sb.toString();
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception dwling url", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
         }
-        return data;
     }
 
-    private class ParserTask extends AsyncTask<String, Integer, Void> {
+    public static class ParserTask extends AsyncTask<String, Integer, Void> {
 
-        JSONObject jObject;
         private String mDuration;
+        JSONObject jObject;
+
+        public AsyncResponseDuration delegate = null;
+        private String mDurationInSeconds;
+
+        public ParserTask(AsyncResponseDuration delegate){
+            this.delegate = delegate;
+        }
+
+        public ParserTask(){}
 
         @Override
         protected Void doInBackground(String... jsonData) {
@@ -124,6 +151,7 @@ public class TrajectCreator {
                 JSONObject distanceAndTime = element.getJSONObject(0);
                 JSONObject duration = distanceAndTime.getJSONObject("duration");
                 mDuration = duration.getString("text");
+                mDurationInSeconds = duration.getString("value");
 
 
             } catch (Exception e) {
@@ -135,7 +163,12 @@ public class TrajectCreator {
         @Override
         protected void onPostExecute(Void aVoid) {
             String duration = "Duration : " + mDuration;
-            mDurationView.setText(duration);
+            if(mDurationView != null){
+                mDurationView.setText(duration);
+            }
+            if(delegate != null){
+                delegate.processFinish(mDurationInSeconds);
+            }
         }
     }
 

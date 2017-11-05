@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.fragments;
+package com.silho.ideo.meetus.UI.fragments;
 
 
 import android.app.Activity;
@@ -8,13 +8,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SnapHelper;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -31,7 +27,6 @@ import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.FriendsAdapter;
 import com.silho.ideo.meetus.model.User;
 

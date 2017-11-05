@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.data;
+package com.silho.ideo.meetus.parsers;
 
 import android.content.Context;
 import android.location.Location;
@@ -9,11 +9,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.util.Log;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
 import com.silho.ideo.meetus.model.PlaceNearby;
-import com.silho.ideo.meetus.utils.Place_JSON;
 
 import org.json.JSONObject;
 
@@ -26,8 +23,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by Samuel on 25/07/2017.
@@ -139,7 +134,7 @@ public class PlaceNearbyCreator {
         protected List<HashMap<String, String>> doInBackground(String... jsonData) {
 
             List<HashMap<String, String>> places = null;
-            Place_JSON placeJson = new Place_JSON();
+            PlaceJSONParser placeJson = new PlaceJSONParser();
 
             try {
                 jObject = new JSONObject(jsonData[0]);

@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.data;
+package com.silho.ideo.meetus.parsers;
 
 import android.Manifest;
 import android.content.Context;
@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.silho.ideo.meetus.utils.RouteJSONParser;
 
 import org.json.JSONObject;
 

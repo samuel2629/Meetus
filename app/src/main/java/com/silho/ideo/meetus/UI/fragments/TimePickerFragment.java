@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.fragments;
+package com.silho.ideo.meetus.UI.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;

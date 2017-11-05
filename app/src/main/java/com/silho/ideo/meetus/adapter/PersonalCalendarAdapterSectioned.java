@@ -1,14 +1,12 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,21 +16,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.activities.InvitationResumerActivity;
-import com.silho.ideo.meetus.activities.MainActivity;
-import com.silho.ideo.meetus.firebaseCloudMessaging.MyFirebaseMessagingService;
+import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
+import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
 import com.truizlop.sectionedrecyclerview.SimpleSectionedAdapter;
-
-import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,15 +136,15 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             public void onClick(DialogInterface dialogInterface, int i) {
                 mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(MainActivity.mIdFacebook).child("scheduledEvent");
                 if(section == 0){
-                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
                     mTodayEvents.remove(position);
                     notifyDataSetChanged();
                 } else if (section == 1){
-                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
                     mTomorrowEvents.remove(position);
                     notifyDataSetChanged();
                 } else {
-                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTp())).removeValue();
+                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
                     mScheduledEvents.remove(position);
                     notifyDataSetChanged();
                 }
@@ -167,11 +161,11 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     }
 
     public void add(ScheduledEvent scheduledEvent){
-        if(mActualTime<scheduledEvent.getTp() && scheduledEvent.getTp()<mActualTime+86400){
+        if(mActualTime<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+86400){
             mTodayEvents.add(scheduledEvent);
-        } else if (mActualTime+86400<scheduledEvent.getTp() && scheduledEvent.getTp()<mActualTime+172800){
+        } else if (mActualTime+86400<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+172800){
             mTomorrowEvents.add(scheduledEvent);
-        } else if (scheduledEvent.getTp()>mActualTime+172800){
+        } else if (scheduledEvent.getTimestamp()>mActualTime+172800){
             mScheduledEvents.add(scheduledEvent);
         }
         notifyDataSetChanged();
@@ -198,23 +192,23 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mCardView = (CardView) itemView.findViewById(R.id.card_item_calendar);
-            mFriendsTextView = (TextView) itemView.findViewById(R.id.friendsTextView);
-            mImageView = (ImageView) itemView.findViewById(R.id.confirmedDateImageView);
-            mDateView = (TextView) itemView.findViewById(R.id.dateTextView);
-            mTimeView = (TextView) itemView.findViewById(R.id.timeTextView);
-            mPlaceNameView = (TextView) itemView.findViewById(R.id.placeTextView);
+            mCardView = itemView.findViewById(R.id.card_item_calendar);
+            mFriendsTextView = itemView.findViewById(R.id.friendsTextView);
+            mImageView = itemView.findViewById(R.id.confirmedDateImageView);
+            mDateView = itemView.findViewById(R.id.dateTextView);
+            mTimeView = itemView.findViewById(R.id.timeTextView);
+            mPlaceNameView = itemView.findViewById(R.id.placeTextView);
 
 
             itemView.setOnClickListener(this);
         }
 
         public void bindEvent(ScheduledEvent scheduledEvent) {
-            mTime = scheduledEvent.getTp();
-            mLatDest = scheduledEvent.getLat();
-            mLongDest = scheduledEvent.getLong();
+            mTime = scheduledEvent.getTimestamp();
+            mLatDest = scheduledEvent.getLatitude();
+            mLongDest = scheduledEvent.getLongitude();
             mPlaceName = scheduledEvent.getPlaceName();
-            mIsScheduled = scheduledEvent.isScheduled();
+            mIsScheduled = scheduledEvent.getIsScheduled();
             mFriends = scheduledEvent.getUsers();
 
             if(mIsScheduled){
