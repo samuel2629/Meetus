@@ -1,21 +1,12 @@
 package com.silho.ideo.meetus.controller.firebaseJobDispatcher;
 
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.AsyncTask;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
-import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.controller.detectionActivityPackages.DetectionActivity;
-
-import java.util.Random;
 
 /**
  * Created by Samuel on 01/11/2017.
@@ -23,17 +14,14 @@ import java.util.Random;
 
 public class NeedToGoReminderFirebaseJobService extends JobService {
     private static final String TAG = NeedToGoReminderFirebaseJobService.class.getSimpleName();
-    private AsyncTask mBackgoundTask;
-    DetectionActivity mDetectionActivity;
-
+    private JobTask mBackgoundTask;
 
     @Override
     @SuppressWarnings("unchecked")
     public boolean onStartJob(final JobParameters job) {
-        mDetectionActivity = new DetectionActivity(NeedToGoReminderFirebaseJobService.this);
-        mDetectionActivity.getClient().connect();
-        jobFinished(job, false);
-
+        Log.e(TAG, "START");
+        mBackgoundTask = new JobTask(this, this);
+        mBackgoundTask.execute(job);
         return true;
     }
 
@@ -43,22 +31,38 @@ public class NeedToGoReminderFirebaseJobService extends JobService {
         return true;
     }
 
-    private void notif(Context context){
-        PendingIntent pi = PendingIntent.getActivity(context, 0,
-                new Intent(context, MainActivity.class), 0);
+    private static class JobTask extends AsyncTask<JobParameters, Void, JobParameters>{
 
-        Notification notification = new NotificationCompat.Builder(context)
-                .setContentTitle("Android Job Demo")
-                .setContentText("Notification from Android Job Demo App.")
-                .setAutoCancel(true)
-                .setContentIntent(pi)
-                .setSmallIcon(R.drawable.ic_free_breakfast_black_24dp)
-                .setShowWhen(true)
-                .setColor(Color.RED)
-                .setLocalOnly(true)
-                .build();
+        private final JobService jobservice;
+        private final Context context;
+        DetectionActivity mDetectionActivity;
 
-        NotificationManagerCompat.from(context)
-                .notify(new Random().nextInt(), notification);
+        public JobTask(JobService jobService, Context context){
+            this.jobservice = jobService;
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.e(TAG, "PREEXECUTE");
+            super.onPreExecute();
+            mDetectionActivity = new DetectionActivity();
+        }
+
+        @Override
+        protected JobParameters doInBackground(JobParameters... jobParameters) {
+            Log.e(TAG, "BACK");
+            mDetectionActivity.getClient().connect();
+            return jobParameters[0];
+        }
+
+        @Override
+        protected void onPostExecute(JobParameters jobParameters) {
+            Log.e(TAG, "FINISH");
+            super.onPostExecute(jobParameters);
+            jobservice.jobFinished(jobParameters, false);
+        }
     }
+
+
 }

@@ -51,50 +51,48 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         if (remoteMessage.getData().size() > 0) {
             final Map<String, String> data = remoteMessage.getData();
-
-            if(data.size() == 2){
-                mIdFacebook = data.get("idFacebook");
-                mTime = Long.parseLong(data.get("time"));
-
-                if(mIdFacebook.equals(Profile.getCurrentProfile().getId())){
-                    return;
-                } else {
-                    DatabaseReference databaseReference = FirebaseDatabase.getInstance()
-                            .getReference().child("users").child(Profile.getCurrentProfile().getId())
-                            .child("scheduledEvent").child(String.valueOf(mTime)).child("users");
-                    Query query = databaseReference.orderByChild("idFacebook").equalTo(mIdFacebook);
-                    query.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                                String user = String.valueOf(snapshot.child("name").getValue());
-                                canceledFriendNotification(user);
-                                snapshot.getRef().removeValue();
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-
-            } else {
-                mIdFacebook = data.get("idFacebook");
-                mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
-                mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
-                mPlaceName = data.get("placeName");
-                mTime = Long.parseLong(data.get("time"));
-                String username = data.get("username");
-                mFriendsList = data.get("friendsList");
-
-                eventNotification(username, "Meetus");
-            }
-        }
+            if(data.size() == 2){receiveDecline(data);} else {receiveInvitation(data);}}
 
         if (remoteMessage.getNotification() != null) {
-            eventNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            eventNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());}
+    }
+
+    private void receiveInvitation(Map<String, String> data) {
+        mIdFacebook = data.get("idFacebook");
+        mLatitudeDestination = Double.parseDouble(data.get("latitudeDestination"));
+        mLongitudeDestination = Double.parseDouble(data.get("longitudeDestination"));
+        mPlaceName = data.get("placeName");
+        mTime = Long.parseLong(data.get("time"));
+        String username = data.get("username");
+        mFriendsList = data.get("friendsList");
+
+        eventNotification(username, "Meetus");
+    }
+
+    private void receiveDecline(Map<String, String> data) {
+        mIdFacebook = data.get("idFacebook");
+        mTime = Long.parseLong(data.get("time"));
+
+        if(!mIdFacebook.equals(Profile.getCurrentProfile().getId())) {
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance()
+                    .getReference().child("users").child(Profile.getCurrentProfile().getId())
+                    .child("scheduledEvent").child(String.valueOf(mTime)).child("users");
+            Query query = databaseReference.orderByChild("idFacebook").equalTo(mIdFacebook);
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                        String user = String.valueOf(snapshot.child("name").getValue());
+                        canceledFriendNotification(user);
+                        snapshot.getRef().removeValue();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 

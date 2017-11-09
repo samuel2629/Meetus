@@ -1,5 +1,6 @@
 package com.silho.ideo.meetus.controller.detectionActivityPackages;
 
+import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,6 +24,8 @@ import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionClient;
 import com.google.android.gms.location.DetectedActivity;
 import com.silho.ideo.meetus.R;
+import com.silho.ideo.meetus.UI.activities.MainActivity;
+import com.silho.ideo.meetus.controller.firebaseJobDispatcher.ReminderScheduler;
 
 import java.util.ArrayList;
 
@@ -29,16 +33,14 @@ import java.util.ArrayList;
  * Created by Samuel on 01/08/2017.
  */
 
-public class DetectionActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class DetectionActivity extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private static final String TAG = DetectionActivity.class.getSimpleName();
+    public static final String TAG = DetectionActivity.class.getSimpleName();
     private Context mContext;
-    private GoogleApiClient mClient;
+    private static GoogleApiClient mClient;
 
-
-    public DetectionActivity(Context context){
-        mContext = context;
-        mClient = buildGoogleApiClient(mContext);
+    public DetectionActivity() {
+        super(TAG);
     }
 
     private GoogleApiClient buildGoogleApiClient(Context context) {
@@ -49,7 +51,7 @@ public class DetectionActivity implements GoogleApiClient.ConnectionCallbacks, G
                 .build();
     }
 
-    public GoogleApiClient getClient() {
+    public static GoogleApiClient getClient() {
         return mClient;
     }
 
@@ -63,12 +65,16 @@ public class DetectionActivity implements GoogleApiClient.ConnectionCallbacks, G
         Log.i(TAG, "Connected");
     }
 
-    public void removeUpdates(){
-        Intent intent = new Intent(mContext, DetectedActivitiesIntentService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.getClient(mContext).removeActivityUpdates(pendingIntent);
-        mClient.disconnect();
-        Log.i(TAG, "disconnected");
+    public static void removeUpdates(Context context, GoogleApiClient googleApiClient){
+        Intent intent = new Intent(context, DetectedActivitiesIntentService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        ActivityRecognition.getClient(context).removeActivityUpdates(pendingIntent);
+        if(googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+            Log.i(TAG, "disconnected");
+        }
+        ReminderScheduler.sInitialized = false;
+        ReminderScheduler.scheduleReminder(context);
     }
 
     @Override
@@ -79,5 +85,12 @@ public class DetectionActivity implements GoogleApiClient.ConnectionCallbacks, G
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        mContext = this;
+        buildGoogleApiClient(this);
+        onConnected(null);
     }
 }

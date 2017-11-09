@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.facebook.Profile;
 import com.google.android.gms.location.ActivityRecognitionResult;
@@ -43,7 +44,7 @@ import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.My
  */
 
 public class DetectedActivitiesIntentService extends IntentService implements TrajectCreator.AsyncResponse,
-TrajectCreator.AsyncResponseDuration{
+TrajectCreator.AsyncResponseDuration {
     public static final String TAG = "detection_is";
     private double mMyLatitude;
     private double mMyLongitude;
@@ -51,7 +52,7 @@ TrajectCreator.AsyncResponseDuration{
     private TrajectCreator mTrajectCreator;
     private long mTimeNextRdv;
     private String mPlaceName;
-    public static final int  NOTIFICATION_ID = 137;
+    public static final int NOTIFICATION_ID = 137;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
     private String mFriendsList;
@@ -60,82 +61,103 @@ TrajectCreator.AsyncResponseDuration{
         super(TAG);
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     @SuppressWarnings("unchecked")
-    protected void onHandleIntent(@Nullable Intent intent) {
+    protected void onHandleIntent(@Nullable final Intent intent) {
+        Log.e(TAG, "Service Starts Is Ok !");
+
         mTrajectCreator = new TrajectCreator(DetectedActivitiesIntentService.this, null);
+        getActivityRecognition(intent);
+        getLocation();
+        requestNextEvent();
+    }
 
-        ActivityRecognitionResult recognitionResult = ActivityRecognitionResult.extractResult(intent);
-        ArrayList<DetectedActivity> detectedActivities = (ArrayList) recognitionResult.getProbableActivities();
-        mActivityRecognized = getActivityString(detectedActivities.get(0).getType());
-
-        LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                mMyLatitude = location.getLatitude();
-                mMyLongitude = location.getLongitude();
-            }
-        });
-
+    private void requestNextEvent() {
         DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("users")
                 .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
         final Query query = database.orderByKey().limitToFirst(1);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
-                    ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
-                    if (System.currentTimeMillis() / 1000 > se.getTimestamp()) {
-                        dataSnapshot.getChildren().iterator().next().getRef().removeValue();
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
-                                    ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
-                                    mTimeNextRdv = se.getTimestamp();
-                                    mPlaceName = se.getPlaceName();
-                                    mLatitudeDestination = se.getLatitude();
-                                    mLongitudeDestination = se.getLongitude();
-                                    if(se.getUsers() != null){
-                                    mFriendsList = se.getUsers().toString();}
-                                    StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
-                                            mMyLatitude,
-                                            mMyLongitude,
-                                            mLatitudeDestination,
-                                            mLongitudeDestination,
-                                            mActivityRecognized
-                                    );
-                                    new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                if (dataSnapshot.hasChildren() || dataSnapshot.exists()) {
+                    if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
+                        ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
+
+                        if (System.currentTimeMillis() / 1000 > se.getTimestamp()) {
+                            dataSnapshot.getChildren().iterator().next().getRef().removeValue();
+                            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class) != null) {
+                                        ScheduledEvent se = dataSnapshot.getChildren().iterator().next().getValue(ScheduledEvent.class);
+                                        mTimeNextRdv = se.getTimestamp();
+                                        mPlaceName = se.getPlaceName();
+                                        mLatitudeDestination = se.getLatitude();
+                                        mLongitudeDestination = se.getLongitude();
+                                        if (se.getUsers() != null) {
+                                            mFriendsList = se.getUsers().toString();
+                                        }
+                                        StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
+                                                mMyLatitude,
+                                                mMyLongitude,
+                                                mLatitudeDestination,
+                                                mLongitudeDestination,
+                                                mActivityRecognized
+                                        );
+                                        new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
 
+                                }
+                            });
+                        } else {
+                            mTimeNextRdv = se.getTimestamp();
+                            mPlaceName = se.getPlaceName();
+                            mLatitudeDestination = se.getLatitude();
+                            mLongitudeDestination = se.getLongitude();
+                            if (se.getUsers() != null) {
+                                mFriendsList = se.getUsers().toString();
                             }
-                        });
-                    } else {
-                        mTimeNextRdv = se.getTimestamp();
-                        mPlaceName = se.getPlaceName();
-                        mLatitudeDestination = se.getLatitude();
-                        mLongitudeDestination = se.getLongitude();
-                        if(se.getUsers() != null){
-                            mFriendsList = se.getUsers().toString();}
-                        StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
-                                mMyLatitude,
-                                mMyLongitude,
-                                mLatitudeDestination,
-                                mLongitudeDestination,
-                                mActivityRecognized
-                        );
-                        new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                            StringBuilder stringBuilder = mTrajectCreator.stringBuilderPlaceDestination(
+                                    mMyLatitude,
+                                    mMyLongitude,
+                                    mLatitudeDestination,
+                                    mLongitudeDestination,
+                                    mActivityRecognized
+                            );
+                            new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
+                        }
                     }
+                } else {
+                    DetectionActivity.removeUpdates(DetectedActivitiesIntentService.this, DetectionActivity.getClient());
+                    stopSelf();
+                    return;
                 }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+    }
+
+    private void getActivityRecognition(@Nullable Intent intent) {
+        ActivityRecognitionResult recognitionResult = ActivityRecognitionResult.extractResult(intent);
+        ArrayList<DetectedActivity> detectedActivities = (ArrayList) recognitionResult.getProbableActivities();
+        mActivityRecognized = getActivityString(detectedActivities.get(0).getType());
+    }
+
+    @SuppressLint("MissingPermission")
+    private void getLocation() {
+        LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                mMyLatitude = location.getLatitude();
+                mMyLongitude = location.getLongitude();
             }
         });
     }
@@ -171,20 +193,22 @@ TrajectCreator.AsyncResponseDuration{
 
     @Override
     public void processFinish(String duration) {
-        long currentTime = System.currentTimeMillis();
+        long timeAsked = System.currentTimeMillis()/1000 + Long.parseLong(duration);
+        long timeRDV = mTimeNextRdv - 300;
         String message = "You should get prepared for your next appointment to " + mPlaceName;
         String title = "Meetus Reminder";
-        /*if(mTimeNextRdv != 0.0) {
-            if (((currentTime / 1000 + Long.parseLong(duration)) + 600) >= (mTimeNextRdv - 300)
-                    && ((currentTime/1000) + Long.parseLong(duration)) <= mTimeNextRdv) {*/
+        if (mTimeNextRdv != 0.0) {
+            if (timeAsked + 600 >= timeRDV && !(timeAsked >= mTimeNextRdv)) {
+                Log.e(TAG, "CONDITIONS ARE MET " + timeAsked + "/" + timeRDV);
                 Intent intent = new Intent(this, InvitationResumerActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
-        bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
-        bundle.putString(PLACE_NAME, mPlaceName);
-        bundle.putLong(TIME, mTimeNextRdv);
-        if(mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
-        intent.putExtras(bundle);
+                Bundle bundle = new Bundle();
+                bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
+                bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
+                bundle.putString(PLACE_NAME, mPlaceName);
+                bundle.putLong(TIME, mTimeNextRdv);
+                if (mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
+                intent.putExtras(bundle);
+
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -194,6 +218,7 @@ TrajectCreator.AsyncResponseDuration{
                         .setContentText(message)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentIntent(pendingIntent)
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(message));
@@ -202,12 +227,11 @@ TrajectCreator.AsyncResponseDuration{
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                 notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-                DetectionActivity detectionActivity = new DetectionActivity(this);
-                detectionActivity.removeUpdates();
-            /*}
-            else {
-                DetectionActivity detectionActivity = new DetectionActivity(this);
-                detectionActivity.removeUpdates();
-            }*/
+                DetectionActivity.removeUpdates(this, DetectionActivity.getClient());
+            } else {
+                Log.e(TAG, "CONDITIONS ARE NOT MET "+ timeAsked + "/" + timeRDV);
+                DetectionActivity.removeUpdates(this, DetectionActivity.getClient());
+            }
         }
     }
+}
