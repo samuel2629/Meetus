@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 public class ScheduledEvent implements Parcelable{
 
+    private int transportType;
     private double latitude, longitude;
     private String placeName;
     private long timestamp;
@@ -20,13 +21,14 @@ public class ScheduledEvent implements Parcelable{
     public ScheduledEvent(){}
 
     public ScheduledEvent(long timestamp, String placeName, double latitude,
-                          double longitude, boolean isScheduled, ArrayList<User> users){
+                          double longitude, boolean isScheduled, ArrayList<User> users, int transportType){
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
         this.placeName = placeName;
         this.isScheduled = isScheduled;
         this.users = users;
+        this.transportType = transportType;
     }
 
     public void setLatitude(double latitude) {
@@ -77,6 +79,14 @@ public class ScheduledEvent implements Parcelable{
         return placeName;
     }
 
+    public int getTransportType() {
+        return transportType;
+    }
+
+    public void setTransportType(int transportType) {
+        this.transportType = transportType;
+    }
+
     public ScheduledEvent(Parcel in) {
         latitude = in.readDouble();
         longitude = in.readDouble();
@@ -84,6 +94,7 @@ public class ScheduledEvent implements Parcelable{
         timestamp = in.readLong();
         isScheduled = in.readByte() != 0;
         in.readTypedList(users, User.CREATOR);
+        transportType = in.readInt();
     }
 
     public static final Creator<ScheduledEvent> CREATOR = new Creator<ScheduledEvent>() {
@@ -111,5 +122,6 @@ public class ScheduledEvent implements Parcelable{
         parcel.writeLong(timestamp);
         parcel.writeByte((byte) (isScheduled ? 1 : 0));
         parcel.writeTypedList(users);
+        parcel.writeInt(transportType);
     }
 }

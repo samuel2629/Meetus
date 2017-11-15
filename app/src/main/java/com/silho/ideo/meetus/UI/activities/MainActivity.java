@@ -26,17 +26,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.controller.firebaseJobDispatcher.ReminderScheduler;
+import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -67,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         FontHelper.setCustomTypeface(mFrameLayout);
 
-        ReminderScheduler.scheduleReminder(this);
-
         setSupportActionBar(mToolbar);
         mToolbar.setElevation(4.0f);
         MainActivity.this.setTitle("");
@@ -92,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (user != null) {
                     if(!mAuthFlag){
                         getFacebookDataInfo();
+                        ReminderScheduler.scheduleReminder(MainActivity.this);
                         mAuthFlag=true;
                     }
                 } else {
@@ -158,15 +154,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if(position == 1){
-                    mToolBarTitle.setText("Scheduler");
-                } else if(position == 0){
-                    mToolBarTitle.setText("Calendar");
-                }
             }
 
             @Override
             public void onPageSelected(int position) {
+                if(position == 0) {
+                    mToolBarTitle.setText("Calendar");
+                } else if(position == 1){
+                    mToolBarTitle.setText("Scheduler");
+                }
             }
 
             @Override

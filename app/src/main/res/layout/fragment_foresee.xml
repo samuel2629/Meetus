@@ -40,7 +40,8 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <android.support.design.widget.FloatingActionButton
                         android:id="@+id/restaurantTypeFAB"
@@ -138,18 +139,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
                     android:paddingTop="8dp">
-
-                    <android.support.design.widget.FloatingActionButton
-                        android:id="@+id/bikingFAB"
-                        style="@style/TypeFABTheme"
-                        app:backgroundTint="@color/colorPrimary"
-                        app:elevation="2dp"
-                        app:fabSize="normal"
-                        app:rippleColor="@color/colorSecondary"
-                        app:srcCompat="@drawable/ic_directions_bike_black_24dp"/>
 
                     <android.support.design.widget.FloatingActionButton
                         android:id="@+id/transportFAB"
@@ -179,6 +169,16 @@
                         app:srcCompat="@drawable/ic_directions_walk_black_24dp"
                         />
 
+                    <android.support.design.widget.FloatingActionButton
+                        android:id="@+id/positionFAB"
+                        style="@style/TypeFABTheme"
+                        app:backgroundTint="@color/colorPrimary"
+                        app:elevation="2dp"
+                        app:fabSize="normal"
+                        app:rippleColor="@color/colorSecondary"
+                        app:srcCompat="@drawable/ic_room_black_24dp"
+                        />
+
                 </LinearLayout>
 
                     <TextView
@@ -186,7 +186,7 @@
                         android:layout_width="match_parent"
                         android:fontFamily="sans-serif-smallcaps"
                         android:layout_height="wrap_content"
-                        android:padding="6dp"
+                        android:padding="4dp"
                         android:gravity="center"
                         android:text="--"
                         android:textColor="#000000"

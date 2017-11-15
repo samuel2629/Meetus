@@ -1,7 +1,9 @@
 package com.silho.ideo.meetus.UI.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,8 +14,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,7 +49,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.loopj.android.http.AsyncHttpClient;
@@ -110,8 +111,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     FloatingActionButton mFABVisitType;
     @BindView(R.id.coffeeTypeFAB)
     FloatingActionButton mFABCoffeeType;
-    @BindView(R.id.bikingFAB)
-    FloatingActionButton mFABBiking;
     @BindView(R.id.transportFAB)
     FloatingActionButton mFABTransport;
     @BindView(R.id.drivingFAB)
@@ -120,6 +119,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     FloatingActionButton mFABWalking;
     @BindView(R.id.scheduleButton)
     FloatingActionButton mFABScheduleButton;
+    @BindView(R.id.positionFAB) FloatingActionButton mFABPosition;
 
     private GoogleApiClient mClient;
     private PlaceNearbyCreator mPlaceNearbyCreator;
@@ -136,6 +136,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     private String mUsername;
     private String mOwnerProfilPic;
     private String mNamePlace;
+    private int mTransportType = 0;
 
     private int mYear;
     private int mMonth;
@@ -253,34 +254,33 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
     private void setTransportType(final double latitude, final double longitude) {
 
-        resestDesign(mFABBiking, mFABTransport, mFABWalking, mFABDriving,
+        resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
                 R.color.colorPrimary, R.color.colorSecondary);
+        mTransportType = 0;
+        setRoadItinerary(new LatLng(latitude, longitude), "null");
+        mDurationTextView.setText("");
 
-        mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                longitude, "driving");
-        setRoadItinerary(new LatLng(latitude, longitude), "driving");
-
-        mFABBiking.setOnClickListener(new View.OnClickListener() {
+        mFABPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                resestDesign(mFABWalking, mFABDriving, mFABTransport, mFABBiking,
+                resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
                         R.color.colorPrimary, R.color.colorSecondary);
-
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "bicycling");
-                setRoadItinerary(new LatLng(latitude, longitude), "bicycling");
+                mTransportType = 0;
+                mDurationTextView.setText("");
+                setRoadItinerary(new LatLng(latitude, longitude), "null");
             }
         });
+
         mFABTransport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                resestDesign(mFABBiking, mFABWalking, mFABDriving, mFABTransport,
+                resestDesign(mFABWalking, mFABDriving, mFABPosition, mFABTransport,
                         R.color.colorPrimary, R.color.colorSecondary);
 
                 mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
                         longitude, "transit");
+                mTransportType = 2;
                 setRoadItinerary(new LatLng(latitude, longitude), "transit");
             }
         });
@@ -288,11 +288,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             @Override
             public void onClick(View view) {
 
-                resestDesign(mFABBiking, mFABTransport, mFABWalking, mFABDriving,
+                resestDesign(mFABTransport, mFABWalking, mFABPosition, mFABDriving,
                         R.color.colorPrimary, R.color.colorSecondary);
 
                 mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
                         longitude, "driving");
+                mTransportType = 3;
                 setRoadItinerary(new LatLng(latitude, longitude), "driving");
 
             }
@@ -301,11 +302,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             @Override
             public void onClick(View view) {
 
-                resestDesign(mFABBiking, mFABDriving, mFABTransport, mFABWalking,
+                resestDesign(mFABDriving, mFABTransport, mFABPosition, mFABWalking,
                         R.color.colorPrimary, R.color.colorSecondary);
 
                 mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
                         longitude, "walking");
+                mTransportType = 4;
                 setRoadItinerary(new LatLng(latitude, longitude), "walking");
             }
         });
@@ -354,19 +356,28 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(),
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+        } else {
+            setLocation();
         }
+    }
 
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION || requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                setLocation();
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void setLocation() {
         LocationServices.getFusedLocationProviderClient(getActivity()).getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
@@ -375,23 +386,23 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 setPlaceType(location);
                 SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
                 mapFragment.getMapAsync(ForeseeFragment.this);
-            }
-        });
 
-        mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(!dataSnapshot.exists()){
-                    mUser = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
-                    mDatabaseReference.setValue(mUser);
-                } else {
-                    mDatabaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
-                }
-            }
+                mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists()) {
+                            mUser = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
+                            mDatabaseReference.setValue(mUser);
+                        } else {
+                            mDatabaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
+                        }
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
+                    }
+                });
             }
         });
 
@@ -423,12 +434,10 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 new TextHttpResponseHandler() {
                     @Override
                     public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        Toast.makeText(getActivity(), responseString, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                        Toast.makeText(getActivity(), responseString, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -454,7 +463,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mLongitudeDestination = longitude;
         mNamePlace = name;
         setTransportType(latitude, longitude);
-        setRoadItinerary(new LatLng(latitude, longitude), "driving");
+        setRoadItinerary(new LatLng(latitude, longitude), "null");
     }
 
     public void onAddPlaceButtonClicked(View view) {
@@ -506,15 +515,10 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 int minute = bund.getInt("selectedMinutes");
                 mTime = componentTimeToTimestamp(mYear, mMonth, mDay, hour, minute);
                 if(mFriend.size() == 0){
-                    DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
-                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, null);
-                    databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
-                    Toast.makeText(getActivity(), "Event Scheduled.", Toast.LENGTH_SHORT).show();
+                    setEvent(null);
                 } else {
                     postRequestToServer();
-                    DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
-                    ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, mFriend);
-                    databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
+                    setEvent(mFriend);
                 }
             }
         }
@@ -534,6 +538,14 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 mFriend = new ArrayList<>(hashMap.values());
             }
         }
+    }
+
+    private void setEvent(ArrayList<User> friends) {
+        DatabaseReference databaseReference = mDatabaseReference.child("scheduledEvent");
+        ScheduledEvent scheduledEvent = new ScheduledEvent(mTime, mNamePlace, mLatitudeDestination, mLongitudeDestination, true, friends, mTransportType);
+        databaseReference.child(Long.toString(mTime)).setValue(scheduledEvent);
+        Toast.makeText(getContext(), "Event Created Successfully", Toast.LENGTH_SHORT).show();
+        getFragmentManager().beginTransaction().detach(this).attach(this).commit();
     }
 
     long componentTimeToTimestamp(int year, int month, int day, int hour, int minute) {
@@ -580,15 +592,15 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mFABRestaurantType.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABCoffeeType.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABVisitType.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
-        mFABBiking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
+        mFABDriving.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABWalking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
-        mFABDriving.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorSecondary)));
+        mFABPosition.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorSecondary)));
         mFABTransport.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
     }
 
     private void resetDesignTrajectsTypes() {
         mDurationTextView.setText("");
-        mFABBiking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
+        mFABPosition.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABWalking.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABDriving.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
         mFABTransport.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), R.color.colorPrimary)));
@@ -597,12 +609,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     private void resestDesign(FloatingActionButton floatingActionButton,
                               FloatingActionButton floatingActionButton1,
                               FloatingActionButton floatingActionButton2,
-                              FloatingActionButton floatingActionButton3,
+                              FloatingActionButton floatingActionButton4,
                               int color, int color1) {
         floatingActionButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(),color)));
         floatingActionButton1.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), color)));
         floatingActionButton2.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), color)));
-        floatingActionButton3.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), color1)));
+        floatingActionButton4.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getActivity(), color1)));
     }
 
     private void setVisibility() {

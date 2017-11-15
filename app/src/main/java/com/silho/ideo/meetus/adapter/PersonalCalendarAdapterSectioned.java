@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
@@ -72,12 +72,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
                 if(mTodayEvents.isEmpty()){
                     return "Nothing Scheduled For Today.";
                 }
-                return "Within 24 Hours";
+                return "Today";
             case 1:
                 if(mTomorrowEvents.isEmpty()){
                     return null;
                 }
-                return "The Next Day";
+                return "Tomorrow";
             case 2:
                 if(mScheduledEvents.isEmpty()){
                     return null;
@@ -186,6 +186,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         private double mLatDest, mLongDest;
         private String mPlaceName;
         private boolean mIsScheduled;
+        private int mTransportType;
         private ArrayList<User> mFriends;
 
 
@@ -210,6 +211,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             mPlaceName = scheduledEvent.getPlaceName();
             mIsScheduled = scheduledEvent.getIsScheduled();
             mFriends = scheduledEvent.getUsers();
+            mTransportType = scheduledEvent.getTransportType();
 
             if(mIsScheduled){
                 mImageView.setImageResource(R.drawable.ic_fiber_manual_record_green_24dp);
@@ -251,11 +253,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
 
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent(mContext, InvitationResumerActivity.class);
+            Intent intent = new Intent(mContext, EventResumerActivity.class);
             intent.putExtra(MyFirebaseMessagingService.TIME, mTime);
             intent.putExtra(MyFirebaseMessagingService.LATITUDE_DEST, mLatDest);
             intent.putExtra(MyFirebaseMessagingService.LONGITUDE_DEST, mLongDest);
             intent.putExtra(MyFirebaseMessagingService.PLACE_NAME, mPlaceName);
+            intent.putExtra(MyFirebaseMessagingService.TRANSPORT_TYPE, mTransportType);
             if(mFriends != null){
                 intent.putExtra(MyFirebaseMessagingService.FRIENDS_LIST_INVITED, mFriends);
             }

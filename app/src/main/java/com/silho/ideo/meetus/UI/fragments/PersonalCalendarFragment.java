@@ -95,6 +95,12 @@ public class PersonalCalendarFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        setUserVisibleHint(true);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.friend_menu, menu);

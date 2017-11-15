@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.controller.detectionActivityPackages;
+package com.silho.ideo.meetus.controller.recognitionActivityPackages;
 
 import android.annotation.SuppressLint;
 import android.app.IntentService;
@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.facebook.Profile;
 import com.google.android.gms.location.ActivityRecognitionResult;
@@ -26,12 +27,19 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
+import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.parsers.TrajectCreator;
 
 import java.util.ArrayList;
+
+import cz.msebera.android.httpclient.Header;
 
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.FRIENDS_LIST;
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.LATITUDE_DEST;
@@ -56,6 +64,7 @@ TrajectCreator.AsyncResponseDuration {
     private double mLatitudeDestination;
     private double mLongitudeDestination;
     private String mFriendsList;
+    private String mTransportType;
 
     public DetectedActivitiesIntentService() {
         super(TAG);
@@ -65,14 +74,66 @@ TrajectCreator.AsyncResponseDuration {
     @SuppressWarnings("unchecked")
     protected void onHandleIntent(@Nullable final Intent intent) {
         Log.e(TAG, "Service Starts Is Ok !");
+        if(mTrajectCreator == null) {
+            mTrajectCreator = new TrajectCreator(DetectedActivitiesIntentService.this, null);
+        }
 
-        mTrajectCreator = new TrajectCreator(DetectedActivitiesIntentService.this, null);
-        getActivityRecognition(intent);
-        getLocation();
-        requestNextEvent();
+        if(intent != null && intent.getExtras() != null && intent.getExtras().getInt(ReminderScheduler.IS_TRANSPORT_TYPE_SET) != 0){
+            int transportType = intent.getExtras().getInt(ReminderScheduler.IS_TRANSPORT_TYPE_SET);
+            switch (transportType){
+                case 1:
+                    mTransportType = "bicycling";
+                    break;
+                case 2:
+                    mTransportType = "transit";
+                    break;
+                case 3:
+                    mTransportType = "driving";
+                    break;
+                case 4:
+                    mTransportType = "walking";
+                    break;
+            }
+            getLocation();
+            requestNextEvent(mTransportType);
+        } else {
+            mActivityRecognized = getActivityRecognition(intent);
+            getLocation();
+            requestNextEvent(mActivityRecognized);
+        }
     }
 
-    private void requestNextEvent() {
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        //Log.e(TAG, "message sent");
+        //postRequestToserver();
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void postRequestToserver() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        String token = FirebaseInstanceId.getInstance().getToken();
+        params.put("token", token);
+
+
+        client.post("https://meetusite.herokuapp.com/reminder", params,
+                new TextHttpResponseHandler() {
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                        Toast.makeText(DetectedActivitiesIntentService.this, responseString, Toast.LENGTH_SHORT).show();
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                        Toast.makeText(DetectedActivitiesIntentService.this, responseString, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void requestNextEvent(final String activityRecognized) {
         DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("users")
                 .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
         final Query query = database.orderByKey().limitToFirst(1);
@@ -102,7 +163,7 @@ TrajectCreator.AsyncResponseDuration {
                                                 mMyLongitude,
                                                 mLatitudeDestination,
                                                 mLongitudeDestination,
-                                                mActivityRecognized
+                                                activityRecognized
                                         );
                                         new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
                                     }
@@ -126,13 +187,13 @@ TrajectCreator.AsyncResponseDuration {
                                     mMyLongitude,
                                     mLatitudeDestination,
                                     mLongitudeDestination,
-                                    mActivityRecognized
+                                    activityRecognized
                             );
                             new TrajectCreator.PlacesTask(DetectedActivitiesIntentService.this).execute(stringBuilder.toString());
                         }
                     }
                 } else {
-                    DetectionActivity.removeUpdates(DetectedActivitiesIntentService.this, DetectionActivity.getClient());
+                    DetectionActivity.removeUpdates(DetectedActivitiesIntentService.this);
                     stopSelf();
                     return;
                 }
@@ -145,10 +206,10 @@ TrajectCreator.AsyncResponseDuration {
         });
     }
 
-    private void getActivityRecognition(@Nullable Intent intent) {
+    private String getActivityRecognition(@Nullable Intent intent) {
         ActivityRecognitionResult recognitionResult = ActivityRecognitionResult.extractResult(intent);
         ArrayList<DetectedActivity> detectedActivities = (ArrayList) recognitionResult.getProbableActivities();
-        mActivityRecognized = getActivityString(detectedActivities.get(0).getType());
+        return getActivityString(detectedActivities.get(0).getType());
     }
 
     @SuppressLint("MissingPermission")
@@ -193,45 +254,56 @@ TrajectCreator.AsyncResponseDuration {
 
     @Override
     public void processFinish(String duration) {
-        long timeAsked = System.currentTimeMillis()/1000 + Long.parseLong(duration);
-        long timeRDV = mTimeNextRdv - 300;
-        String message = "You should get prepared for your next appointment to " + mPlaceName;
-        String title = "Meetus Reminder";
-        if (mTimeNextRdv != 0.0) {
-            if (timeAsked + 600 >= timeRDV && !(timeAsked >= mTimeNextRdv)) {
-                Log.e(TAG, "CONDITIONS ARE MET " + timeAsked + "/" + timeRDV);
-                Intent intent = new Intent(this, InvitationResumerActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
-                bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
-                bundle.putString(PLACE_NAME, mPlaceName);
-                bundle.putLong(TIME, mTimeNextRdv);
-                if (mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
-                intent.putExtras(bundle);
+        if (duration != null) {
+            Log.e(TAG, "duration is not null");
+            long timeAsked = System.currentTimeMillis() / 1000 + Long.parseLong(duration);
+            String message = "You should get prepared for your next appointment to " + mPlaceName;
+            String title = "Meetus Reminder";
+            if (mTimeNextRdv != 0.0) {
+                if (timeAsked + 1200 >= mTimeNextRdv && !(timeAsked >= mTimeNextRdv)) {
+                    Log.e(TAG, "CONDITIONS ARE MET ");
+                    Intent intent = new Intent(this, EventResumerActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putDouble(LATITUDE_DEST, mLatitudeDestination);
+                    bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
+                    bundle.putString(PLACE_NAME, mPlaceName);
+                    bundle.putLong(TIME, mTimeNextRdv);
+                    if (mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
+                    intent.putExtras(bundle);
 
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_name)
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentIntent(pendingIntent)
-                        .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText(message));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    String uri = "http://maps.google.com/maps?f=d&hl=en&saddr="+mMyLatitude+","+mMyLongitude+"&daddr="+mLatitudeDestination+","+mLongitudeDestination;
+                    Intent i = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                    PendingIntent pendingIntentGo = PendingIntent.getActivity(this, 0, Intent.createChooser(i, "Select an application"), PendingIntent.FLAG_UPDATE_CURRENT);
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                            .setSmallIcon(R.drawable.ic_stat_name)
+                            .setContentTitle(title)
+                            .setContentText(message)
+                            .setAutoCancel(true)
+                            .setSound(defaultSoundUri)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setContentIntent(pendingIntent)
+                            .addAction(R.drawable.ic_navigation_black_24dp, "Let's Go", pendingIntentGo)
+                            .setStyle(new NotificationCompat.BigTextStyle()
+                                    .bigText(message));
 
-                NotificationManager notificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    NotificationManager notificationManager =
+                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-                notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-                DetectionActivity.removeUpdates(this, DetectionActivity.getClient());
-            } else {
-                Log.e(TAG, "CONDITIONS ARE NOT MET "+ timeAsked + "/" + timeRDV);
-                DetectionActivity.removeUpdates(this, DetectionActivity.getClient());
+                    notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+                    DetectionActivity.removeUpdates(this);
+                } else {
+                    if (DetectionActivity.getClient() != null) {
+                        DetectionActivity.getClient().disconnect();
+                        Log.e(TAG, "Client disconnected");
+                    }
+                    DetectionActivity.removeUpdates(this);
+                }
             }
+        } else {
+            DetectionActivity.removeUpdates(this);
         }
     }
 }
