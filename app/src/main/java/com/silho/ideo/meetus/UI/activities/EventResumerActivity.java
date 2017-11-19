@@ -1,6 +1,7 @@
 package com.silho.ideo.meetus.UI.activities;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.support.annotation.NonNull;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -334,26 +336,46 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
             mRecyclerView.setAdapter(adapter);
             mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                     DividerItemDecoration.VERTICAL));
-            mAcceptButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    changeTransportType();
-                }
-            });
-            mDeclineButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    postResponseToServer(2);
-                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
-                            .child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent")
-                            .child(Long.toString(mTime));
-                    databaseReference.removeValue();
-                    finish();
-                }
-            });
+            setAcceptAndDeclineButtons(true, "By deleting this meetus, you also cancel your participation.");
         } else {
+            setAcceptAndDeclineButtons(false, "Delete this meetus ?");
             mFrameLayout.setVisibility(View.GONE);
         }
+    }
+
+    private void setAcceptAndDeclineButtons(final boolean isFriendsPresent, final String message) {
+        mAcceptButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeTransportType();
+            }
+        });
+        mDeclineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(EventResumerActivity.this);
+                builder.setTitle("Delete");
+                builder.setMessage(message);
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if(isFriendsPresent){postResponseToServer(2);}
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent")
+                        .child(Long.toString(mTime));
+                databaseReference.removeValue();
+                finish();
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.create().show();
+            }
+        });
     }
 
     private void changeTransportType() {
@@ -467,7 +489,6 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
         params.put("time", mTime);
         params.put("idFacebook", mIdFacebookCurrent);
         params.put("acceptedOrDeclined", acceptedOrDelined);
-
         params.put("friendsList", mFriendList);
 
         client.post("https://meetusite.herokuapp.com/acceptedOrDeclined", params,
@@ -478,7 +499,6 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
 
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                        Toast.makeText(EventResumerActivity.this, responseString, Toast.LENGTH_SHORT).show();
                     }
                 });
     }

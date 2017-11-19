@@ -8,6 +8,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.format.DateFormat;
 
 import com.facebook.Profile;
 
@@ -22,6 +23,8 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Map;
 
 /**
@@ -146,6 +149,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(messageBody)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(messageBody))
                 .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
@@ -159,8 +164,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle(name)
-                .setContentText(name + " won't participate.")
+                .setContentText(name + " won't meetus on the " + getDate(mTime*1000))
                 .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(name + " won't meetus on the " + getDate(mTime*1000)))
                 .setSound(defaultSoundUri);
 
         NotificationManager notificationManager =
@@ -174,8 +181,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentTitle(name)
-                .setContentText(name + " is participing.")
+                .setContentText(name + " will meetus on the " + getDate(mTime*1000))
                 .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(name + " will meetus on the " + getDate(mTime*1000)))
                 .setSound(defaultSoundUri);
 
         NotificationManager notificationManager =
@@ -183,4 +192,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
     }
+
+
+    private String getDate(long time) {
+        Calendar cal = GregorianCalendar.getInstance();
+        cal.setTimeInMillis(time);
+        return DateFormat.format("EEE d MMM yyyy 'at' HH:mm", cal).toString();
+    }
+
 }

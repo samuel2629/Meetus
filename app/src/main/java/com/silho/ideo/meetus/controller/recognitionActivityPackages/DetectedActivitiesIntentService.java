@@ -260,7 +260,7 @@ TrajectCreator.AsyncResponseDuration {
             String message = "You should get prepared for your next appointment to " + mPlaceName;
             String title = "Meetus Reminder";
             if (mTimeNextRdv != 0.0) {
-                if (timeAsked + 1200 >= mTimeNextRdv && !(timeAsked >= mTimeNextRdv)) {
+                if (timeAsked + 2100 >= mTimeNextRdv && !(timeAsked >= mTimeNextRdv)) {
                     Log.e(TAG, "CONDITIONS ARE MET ");
                     Intent intent = new Intent(this, EventResumerActivity.class);
                     Bundle bundle = new Bundle();
