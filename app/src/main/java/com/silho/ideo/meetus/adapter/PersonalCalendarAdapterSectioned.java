@@ -118,12 +118,8 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     protected void onBindItemViewHolder(ViewHolder holder, final int section, final int position) {
         holder.bindEvent(section, position);
         FontHelper.setCustomTypeface(holder.itemView);
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                deleteDialogFragment(section, position).show();
-                return true;
-            }
+        holder.itemView.setOnLongClickListener(view -> {deleteDialogFragment(section, position).show();
+            return true;
         });
     }
 
@@ -132,32 +128,24 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         builder.setTitle("Delete");
         builder.setMessage("Are you sure ?");
 
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
-                if(section == 0){
-                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
-                    mTodayEvents.remove(position);
-                    notifyDataSetChanged();
-                } else if (section == 1){
-                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
-                    mTomorrowEvents.remove(position);
-                    notifyDataSetChanged();
-                } else {
-                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
-                    mScheduledEvents.remove(position);
-                    notifyDataSetChanged();
-                }
+        builder.setPositiveButton("Yes", (dialogInterface, i) -> {
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
+            if(section == 0){
+                mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
+                mTodayEvents.remove(position);
+                notifyDataSetChanged();
+            } else if (section == 1){
+                mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
+                mTomorrowEvents.remove(position);
+                notifyDataSetChanged();
+            } else {
+                mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
+                mScheduledEvents.remove(position);
+                notifyDataSetChanged();
             }
         });
 
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setNegativeButton("No", (dialogInterface, i) -> dialogInterface.dismiss());
         return builder.create();
     }
 

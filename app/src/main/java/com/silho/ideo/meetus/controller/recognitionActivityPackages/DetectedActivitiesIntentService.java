@@ -7,30 +7,23 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.location.Location;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.facebook.Profile;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
@@ -39,13 +32,12 @@ import com.silho.ideo.meetus.parsers.TrajectCreator;
 
 import java.util.ArrayList;
 
-import cz.msebera.android.httpclient.Header;
-
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.FRIENDS_LIST;
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.LATITUDE_DEST;
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.LONGITUDE_DEST;
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.PLACE_NAME;
 import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.TIME;
+import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService.TRANSPORT_TYPE;
 
 /**
  * Created by Samuel on 27/07/2017.
@@ -64,9 +56,10 @@ TrajectCreator.AsyncResponseDuration {
     private double mLongitudeDestination;
     private String mPlaceName;
     private String mFriendsList;
-    private String mTransportType;
+    private String mTransportTypeText;
 
     private TrajectCreator mTrajectCreator;
+    private int mTransportType;
 
 
     public DetectedActivitiesIntentService() {
@@ -82,23 +75,23 @@ TrajectCreator.AsyncResponseDuration {
         }
 
         if(intent != null && intent.getExtras() != null && intent.getExtras().getInt(ReminderScheduler.IS_TRANSPORT_TYPE_SET) != 0){
-            int transportType = intent.getExtras().getInt(ReminderScheduler.IS_TRANSPORT_TYPE_SET);
-            switch (transportType){
+            mTransportType = intent.getExtras().getInt(ReminderScheduler.IS_TRANSPORT_TYPE_SET);
+            switch (mTransportType){
                 case 1:
-                    mTransportType = "bicycling";
+                    mTransportTypeText = "bicycling";
                     break;
                 case 2:
-                    mTransportType = "transit";
+                    mTransportTypeText = "transit";
                     break;
                 case 3:
-                    mTransportType = "driving";
+                    mTransportTypeText = "driving";
                     break;
                 case 4:
-                    mTransportType = "walking";
+                    mTransportTypeText = "walking";
                     break;
             }
             getLocation();
-            requestNextEvent(mTransportType);
+            requestNextEvent(mTransportTypeText);
         } else {
             String activityRecognized = getActivityRecognition(intent);
             getLocation();
@@ -187,12 +180,9 @@ TrajectCreator.AsyncResponseDuration {
 
     @SuppressLint("MissingPermission")
     private void getLocation() {
-        LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                mMyLatitude = location.getLatitude();
-                mMyLongitude = location.getLongitude();
-            }
+        LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnSuccessListener(location -> {
+            mMyLatitude = location.getLatitude();
+            mMyLongitude = location.getLongitude();
         });
     }
 
@@ -200,20 +190,28 @@ TrajectCreator.AsyncResponseDuration {
         Resources resources = this.getResources();
         switch (detectedActivityType) {
             case DetectedActivity.IN_VEHICLE:
+                mTransportType = 3;
                 return resources.getString(R.string.in_vehicle);
             case DetectedActivity.ON_BICYCLE:
+                mTransportType = 1;
                 return resources.getString(R.string.on_bicycle);
             case DetectedActivity.ON_FOOT:
+                mTransportType = 4;
                 return resources.getString(R.string.on_foot);
             case DetectedActivity.RUNNING:
+                mTransportType = 4;
                 return resources.getString(R.string.running);
             case DetectedActivity.STILL:
+                mTransportType = 4;
                 return resources.getString(R.string.still);
             case DetectedActivity.TILTING:
+                mTransportType = 4;
                 return resources.getString(R.string.tilting);
             case DetectedActivity.WALKING:
+                mTransportType = 4;
                 return resources.getString(R.string.walking);
             case DetectedActivity.UNKNOWN:
+                mTransportType = 4;
                 return resources.getString(R.string.unknown);
             default:
                 return resources.getString(R.string.unidentifiable_activity);
@@ -241,6 +239,7 @@ TrajectCreator.AsyncResponseDuration {
                     bundle.putDouble(LONGITUDE_DEST, mLongitudeDestination);
                     bundle.putString(PLACE_NAME, mPlaceName);
                     bundle.putLong(TIME, mTimeNextRdv);
+                    bundle.putInt(TRANSPORT_TYPE, mTransportType);
                     if (mFriendsList != null) bundle.putString(FRIENDS_LIST, mFriendsList);
                     intent.putExtras(bundle);
 

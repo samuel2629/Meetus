@@ -48,7 +48,7 @@ public class PersonalCalendarFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<ScheduledEvent>(),System.currentTimeMillis()/1000L);
+        mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<>(),System.currentTimeMillis()/1000L);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapterSectioned);

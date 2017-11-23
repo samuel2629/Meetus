@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         FontHelper.setCustomTypeface(mFrameLayout);
 
         setSupportActionBar(mToolbar);
-        mToolbar.setElevation(4.0f);
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ){mToolbar.setElevation(4.0f);}
         MainActivity.this.setTitle("");
 
         String title = "Scheduler";
@@ -80,28 +80,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void login() {
         mAuth = FirebaseAuth.getInstance();
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    if(!mAuthFlag){
-                        getFacebookDataInfo();
-                        ReminderScheduler.scheduleReminder(MainActivity.this);
-                        mAuthFlag=true;
-                    }
-                } else {
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(Arrays.asList
-                                            (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                    .setTheme(R.style.LoginTheme)
-                                    .build(),
-                            RC_SIGN_IN);
+        mAuthStateListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                if(!mAuthFlag){
+                    getFacebookDataInfo();
+                    ReminderScheduler.scheduleReminder(MainActivity.this);
+                    mAuthFlag=true;
                 }
+            } else {
+                startActivityForResult(
+                        AuthUI.getInstance()
+                                .createSignInIntentBuilder()
+                                .setIsSmartLockEnabled(false)
+                                .setAvailableProviders(Arrays.asList
+                                        (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
+                                                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
+                                .setTheme(R.style.LoginTheme)
+                                .build(),
+                        RC_SIGN_IN);
             }
         };
     }
@@ -122,19 +119,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Bundle parameters = new Bundle();
             parameters.putString("fields", "id,name,picture.type(large)");
             new GraphRequest(AccessToken.getCurrentAccessToken(),
-                    "/me", parameters, HttpMethod.GET, new GraphRequest.Callback() {
-                @Override
-                public void onCompleted(GraphResponse response) {
-                    JSONObject data = response.getJSONObject();
-                    if (data.has("picture")) {
-                        try {
-                            setUserDataUI(data);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                    "/me", parameters, HttpMethod.GET, response -> {
+                        JSONObject data = response.getJSONObject();
+                        if (data.has("picture")) {
+                            try {
+                                setUserDataUI(data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                }
-            }).executeAsync();
+                    }).executeAsync();
         }
 
         else {
