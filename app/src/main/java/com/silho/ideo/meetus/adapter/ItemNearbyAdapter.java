@@ -76,9 +76,9 @@ public class ItemNearbyAdapter extends RecyclerView.Adapter<ItemNearbyAdapter.It
         public ItemNearbyViewHolder(View itemView) {
             super(itemView);
 
-            mNameItem = (TextView) itemView.findViewById(R.id.nameItem);
-            mVincinityItem = (TextView) itemView.findViewById(R.id.vicinityItem);
-            mPhotoImageView = (ImageView) itemView.findViewById(R.id.photoPlaceNearby);
+            mNameItem = itemView.findViewById(R.id.nameItem);
+            mVincinityItem = itemView.findViewById(R.id.vicinityItem);
+            mPhotoImageView = itemView.findViewById(R.id.photoPlaceNearby);
 
             itemView.setOnClickListener(this);
         }

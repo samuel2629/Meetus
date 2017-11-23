@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.controller.recognitionActivityPackages.DetectedActivitiesIntentService;
-import com.silho.ideo.meetus.controller.recognitionActivityPackages.DetectionActivity;
+import com.silho.ideo.meetus.controller.recognitionActivityPackages.DetectionActivityIntentService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 
 /**
@@ -95,7 +95,7 @@ public class ReminderScheduler {
     }
 
     private static void setAlarmAndActivityRecognition(@NonNull Context context) {
-        Intent intent = new Intent(context, DetectionActivity.class);
+        Intent intent = new Intent(context, DetectionActivityIntentService.class);
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= 23) {

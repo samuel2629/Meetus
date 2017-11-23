@@ -53,18 +53,21 @@ import static com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.My
 
 public class DetectedActivitiesIntentService extends IntentService implements TrajectCreator.AsyncResponse,
 TrajectCreator.AsyncResponseDuration {
-    public static final String TAG = "detection_is";
+
+    public static final int NOTIFICATION_ID = 137;
+    public static final String TAG = DetectedActivitiesIntentService.class.getSimpleName();
+
     private double mMyLatitude;
     private double mMyLongitude;
-    private String mActivityRecognized;
-    private TrajectCreator mTrajectCreator;
     private long mTimeNextRdv;
-    private String mPlaceName;
-    public static final int NOTIFICATION_ID = 137;
     private double mLatitudeDestination;
     private double mLongitudeDestination;
+    private String mPlaceName;
     private String mFriendsList;
     private String mTransportType;
+
+    private TrajectCreator mTrajectCreator;
+
 
     public DetectedActivitiesIntentService() {
         super(TAG);
@@ -97,40 +100,10 @@ TrajectCreator.AsyncResponseDuration {
             getLocation();
             requestNextEvent(mTransportType);
         } else {
-            mActivityRecognized = getActivityRecognition(intent);
+            String activityRecognized = getActivityRecognition(intent);
             getLocation();
-            requestNextEvent(mActivityRecognized);
+            requestNextEvent(activityRecognized);
         }
-    }
-
-    @Override
-    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        //Log.e(TAG, "message sent");
-        //postRequestToserver();
-
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    private void postRequestToserver() {
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params = new RequestParams();
-        String token = FirebaseInstanceId.getInstance().getToken();
-        params.put("token", token);
-
-
-        client.post("https://meetusite.herokuapp.com/reminder", params,
-                new TextHttpResponseHandler() {
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        Toast.makeText(DetectedActivitiesIntentService.this, responseString, Toast.LENGTH_SHORT).show();
-
-                    }
-
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                        Toast.makeText(DetectedActivitiesIntentService.this, responseString, Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     private void requestNextEvent(final String activityRecognized) {
@@ -193,7 +166,7 @@ TrajectCreator.AsyncResponseDuration {
                         }
                     }
                 } else {
-                    DetectionActivity.removeUpdates(DetectedActivitiesIntentService.this);
+                    DetectionActivityIntentService.removeUpdates(DetectedActivitiesIntentService.this);
                     stopSelf();
                     return;
                 }
@@ -248,12 +221,12 @@ TrajectCreator.AsyncResponseDuration {
     }
 
     @Override
-    public void processAlmostFinish(String output) {
+    public void parsingTask(String output) {
         new TrajectCreator.ParserTask(DetectedActivitiesIntentService.this).execute(output);
     }
 
     @Override
-    public void processFinish(String duration) {
+    public void taskParsedAndOutput(String duration) {
         if (duration != null) {
             Log.e(TAG, "duration is not null");
             long timeAsked = System.currentTimeMillis() / 1000 + Long.parseLong(duration);
@@ -293,17 +266,17 @@ TrajectCreator.AsyncResponseDuration {
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                     notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-                    DetectionActivity.removeUpdates(this);
+                    DetectionActivityIntentService.removeUpdates(this);
                 } else {
-                    if (DetectionActivity.getClient() != null) {
-                        DetectionActivity.getClient().disconnect();
+                    if (DetectionActivityIntentService.getClient() != null) {
+                        DetectionActivityIntentService.getClient().disconnect();
                         Log.e(TAG, "Client disconnected");
                     }
-                    DetectionActivity.removeUpdates(this);
+                    DetectionActivityIntentService.removeUpdates(this);
                 }
             }
         } else {
-            DetectionActivity.removeUpdates(this);
+            DetectionActivityIntentService.removeUpdates(this);
         }
     }
 }

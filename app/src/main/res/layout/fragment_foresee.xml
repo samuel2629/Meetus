@@ -202,16 +202,11 @@
 
         </android.support.v7.widget.CardView>
 
-        <FrameLayout
+        <fragment
+            class="com.silho.ideo.meetus.UI.fragments.FriendsFragment"
+            android:id="@+id/rlfrag"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-                <RelativeLayout
-                android:id="@+id/rlfrag"
-                class="com.silho.ideo.meetus.UI.fragments.FriendsFragment"
-                android:layout_width="match_parent"
-                android:layout_height="360dp"/>
-
-        </FrameLayout>
+            android:layout_height="360dp"/>
 
         <LinearLayout
                 android:layout_width="wrap_content"

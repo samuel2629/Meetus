@@ -18,18 +18,25 @@ import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
  * Created by Samuel on 01/08/2017.
  */
 
-public class DetectionActivity extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class DetectionActivityIntentService extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    public static final String TAG = DetectionActivity.class.getSimpleName();
+    public static final String TAG = DetectionActivityIntentService.class.getSimpleName();
     private Context mContext;
     private static GoogleApiClient mClient;
 
-    public DetectionActivity() {
+    public DetectionActivityIntentService() {
         super(TAG);
     }
 
-    private GoogleApiClient buildGoogleApiClient(Context context) {
-         return mClient = new GoogleApiClient.Builder(context)
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        mContext = this;
+        buildGoogleApiClient(this);
+        onConnected(null);
+    }
+
+    private void buildGoogleApiClient(Context context) {
+        mClient = new GoogleApiClient.Builder(context)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(ActivityRecognition.API)
@@ -50,15 +57,6 @@ public class DetectionActivity extends IntentService implements GoogleApiClient.
         Log.i(TAG, "Connected");
     }
 
-    public static void removeUpdates(Context context){
-        Intent intent = new Intent(context, DetectedActivitiesIntentService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.getClient(context).removeActivityUpdates(pendingIntent);
-        ReminderScheduler.sInitialized = false;
-        ReminderScheduler.scheduleReminder(context);
-        Log.e(TAG, "is removed");
-    }
-
     @Override
     public void onConnectionSuspended(int i) {
 
@@ -69,10 +67,12 @@ public class DetectionActivity extends IntentService implements GoogleApiClient.
 
     }
 
-    @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        mContext = this;
-        buildGoogleApiClient(this);
-        onConnected(null);
+    public static void removeUpdates(Context context){
+        Intent intent = new Intent(context, DetectedActivitiesIntentService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        ActivityRecognition.getClient(context).removeActivityUpdates(pendingIntent);
+        ReminderScheduler.sInitialized = false;
+        ReminderScheduler.scheduleReminder(context);
+        Log.e(TAG, "is removed");
     }
 }

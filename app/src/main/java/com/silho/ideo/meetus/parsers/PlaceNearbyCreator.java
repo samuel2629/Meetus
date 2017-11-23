@@ -152,7 +152,6 @@ public class PlaceNearbyCreator {
             for (int i = 0; i < list.size(); i++) {
                 PlaceNearby placeNearby = new PlaceNearby();
 
-                //MarkerOptions markerOptions = new MarkerOptions();
                 HashMap<String, String> hmPlace = list.get(i);
 
                 double lat = Double.parseDouble(hmPlace.get("lat"));
@@ -167,11 +166,6 @@ public class PlaceNearbyCreator {
                 placeNearby.setLatitude(lat);
                 placeNearby.setLongitude(lng);
                 mItemNearbyAdapter.add(placeNearby);
-
-                //LatLng latLng = new LatLng(lat, lng);
-                //markerOptions.position(latLng);
-                //markerOptions.title(name + " : " + vicinity);
-                //markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
             }
 
             mRecyclerView.setAdapter(mItemNearbyAdapter);

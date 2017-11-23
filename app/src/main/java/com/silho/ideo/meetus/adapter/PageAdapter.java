@@ -16,19 +16,17 @@ public class PageAdapter extends FragmentStatePagerAdapter {
 
     public static final String USERNAME = "name";
     public static final String URL_PROFIL_PIC = "profil_pic_url";
-    public static String ID_FACEBOOK;
 
     private int mInt;
-    private String mIdFacebook, mName, mProfilPic;
+    private String mName, mProfilPic;
 
     public PageAdapter(FragmentManager fm) {
         super(fm);
     }
 
-    public PageAdapter(FragmentManager fm, int i, String idFacebook, String name, String profilPic) {
+    public PageAdapter(FragmentManager fm, int i,String name, String profilPic) {
         super(fm);
         mInt = i;
-        mIdFacebook = idFacebook;
         mName = name;
         mProfilPic = profilPic;
     }
@@ -53,7 +51,6 @@ public class PageAdapter extends FragmentStatePagerAdapter {
     private ForeseeFragment launchForeseeFragment() {
             ForeseeFragment foreseeFragment = new ForeseeFragment();
             Bundle bundle = new Bundle();
-            bundle.putString(ID_FACEBOOK, mIdFacebook);
             bundle.putString(USERNAME,mName);
             bundle.putString(URL_PROFIL_PIC, mProfilPic);
             foreseeFragment.setArguments(bundle);

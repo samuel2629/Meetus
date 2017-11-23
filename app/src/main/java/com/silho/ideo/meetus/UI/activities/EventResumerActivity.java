@@ -121,7 +121,7 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
         googleMap.addMarker(new MarkerOptions().position(myLatLng).title("I'm Here"));
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 10);
         googleMap.moveCamera(cameraUpdate);
-        mRoutesCreator = new RoutesCreator(this, new ArrayList<LatLng>(), googleMap);
+        mRoutesCreator = new RoutesCreator(this, new ArrayList<>(), googleMap);
         setRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "driving");
     }
 
@@ -208,56 +208,43 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
                 break;
         }
 
-        mFABposition.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mFABposition.setOnClickListener(view -> {
+            resestDesign(mFABWalking, mFABDriving, mFABTransport, mFABposition,
+                    R.color.colorPrimary, R.color.colorSecondary);
 
-                resestDesign(mFABWalking, mFABDriving, mFABTransport, mFABposition,
-                        R.color.colorPrimary, R.color.colorSecondary);
-
-                mTransportType = 0;
-                setRoadItinerary(new LatLng(latitude, longitude), "null");
-            }
+            mTransportType = 0;
+            setRoadItinerary(new LatLng(latitude, longitude), "null");
         });
-        mFABTransport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mFABTransport.setOnClickListener(view -> {
 
-                resestDesign(mFABposition, mFABWalking, mFABDriving, mFABTransport,
-                        R.color.colorPrimary, R.color.colorSecondary);
+            resestDesign(mFABposition, mFABWalking, mFABDriving, mFABTransport,
+                    R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "transit");
-                mTransportType = 2;
-                setRoadItinerary(new LatLng(latitude, longitude), "transit");
-            }
+            mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
+                    longitude, "transit");
+            mTransportType = 2;
+            setRoadItinerary(new LatLng(latitude, longitude), "transit");
         });
-        mFABDriving.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mFABDriving.setOnClickListener(view -> {
 
-                resestDesign(mFABposition, mFABTransport, mFABWalking, mFABDriving,
-                        R.color.colorPrimary, R.color.colorSecondary);
+            resestDesign(mFABposition, mFABTransport, mFABWalking, mFABDriving,
+                    R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "driving");
-                mTransportType = 3;
-                setRoadItinerary(new LatLng(latitude, longitude), "driving");
+            mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
+                    longitude, "driving");
+            mTransportType = 3;
+            setRoadItinerary(new LatLng(latitude, longitude), "driving");
 
-            }
         });
-        mFABWalking.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mFABWalking.setOnClickListener(view -> {
 
-                resestDesign(mFABposition, mFABDriving, mFABTransport, mFABWalking,
-                        R.color.colorPrimary, R.color.colorSecondary);
+            resestDesign(mFABposition, mFABDriving, mFABTransport, mFABWalking,
+                    R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "walking");
-                mTransportType = 4;
-                setRoadItinerary(new LatLng(latitude, longitude), "walking");
-            }
+            mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
+                    longitude, "walking");
+            mTransportType = 4;
+            setRoadItinerary(new LatLng(latitude, longitude), "walking");
         });
     }
 
@@ -344,37 +331,21 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
     }
 
     private void setAcceptAndDeclineButtons(final boolean isFriendsPresent, final String message) {
-        mAcceptButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changeTransportType();
-            }
-        });
-        mDeclineButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(EventResumerActivity.this);
-                builder.setTitle("Delete");
-                builder.setMessage(message);
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if(isFriendsPresent){postResponseToServer(2);}
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
-                        .child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent")
-                        .child(Long.toString(mTime));
-                databaseReference.removeValue();
-                finish();
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-                builder.create().show();
-            }
+        mAcceptButton.setOnClickListener(view -> changeTransportType());
+        mDeclineButton.setOnClickListener(view -> {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(EventResumerActivity.this);
+            builder.setTitle("Delete");
+            builder.setMessage(message);
+            builder.setPositiveButton("Yes", (dialogInterface, i) -> {
+                if(isFriendsPresent){postResponseToServer(2);}
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent")
+                .child(Long.toString(mTime));
+        databaseReference.removeValue();
+        finish();
+            });
+            builder.setNegativeButton("No", (dialogInterface, i) -> dialogInterface.dismiss());
+            builder.create().show();
         });
     }
 
@@ -447,21 +418,15 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
                 }
             });
 
-            mAcceptButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    postResponseToServer(1);
-                    createNewEventReceveid(friendItems);
-                    finish();
-                }
+            mAcceptButton.setOnClickListener(view -> {
+                postResponseToServer(1);
+                createNewEventReceveid(friendItems);
+                finish();
             });
 
-            mDeclineButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    postResponseToServer(2);
-                    finish();
-                }
+            mDeclineButton.setOnClickListener(view -> {
+                postResponseToServer(2);
+                finish();
             });
         } else {
             mFrameLayout.setVisibility(View.GONE);

@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.Profile;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
@@ -134,7 +135,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(MainActivity.mIdFacebook).child("scheduledEvent");
+                mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
                 if(section == 0){
                     mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
                     mTodayEvents.remove(position);

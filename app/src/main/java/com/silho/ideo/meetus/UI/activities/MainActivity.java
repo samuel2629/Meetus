@@ -21,6 +21,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.Profile;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,7 +43,6 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static String mIdFacebook;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.container_frameLayout) FrameLayout mFrameLayout;
@@ -144,11 +144,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void setUserDataUI(JSONObject data) throws JSONException {
         String name = data.getString("name");
-        mIdFacebook = data.getString("id");
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
 
-        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, mIdFacebook, name, profilPic);
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, name, profilPic);
         mViewPager.setAdapter(pageAdapter);
         mViewPager.setCurrentItem(1, true);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -159,9 +158,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onPageSelected(int position) {
                 if(position == 0) {
-                    mToolBarTitle.setText("Calendar");
+                    mToolBarTitle.setText(R.string.calendar_viewpager_title);
                 } else if(position == 1){
-                    mToolBarTitle.setText("Scheduler");
+                    mToolBarTitle.setText(R.string.scheduler_viewpager_title);
                 }
             }
 

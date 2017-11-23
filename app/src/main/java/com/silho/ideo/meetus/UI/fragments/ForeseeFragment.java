@@ -3,7 +3,6 @@ package com.silho.ideo.meetus.UI.fragments;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -84,41 +83,28 @@ import static android.app.Activity.RESULT_OK;
 
 public class ForeseeFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationSource.OnLocationChangedListener,
-        LocationListener, ItemNearbyAdapter.OnItemClicked, OnMapReadyCallback {
+        LocationListener, ItemNearbyAdapter.OnItemClicked, OnMapReadyCallback,
+        FriendsFragment.OnFriendSelectionListener, View.OnClickListener {
 
     private static final String TAG = ForeseeFragment.class.getSimpleName();
     private static final int PLACE_PICKER_REQUEST = 2;
     private static final int DATE_PICKER = 3;
     private static final int TIME_PICKER = 4;
-    private static final String FRIEND_FRAGMENT = "friend_fragment";
-    private static final int FRIEND_CHOOSED = 5;
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 6;
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 7;
 
-    @BindView(R.id.recyclerViewItemNearby)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.durationTextView)
-    TextView mDurationTextView;
-    @BindView(R.id.addressTextView)
-    TextView mAddressTextView;
-    @BindView(R.id.scrollView)
-    ScrollView mScrollView;
-    @BindView(R.id.searchPlacesFAB)
-    FloatingActionButton mFABsearchPlacesButton;
-    @BindView(R.id.restaurantTypeFAB)
-    FloatingActionButton mFABRestaurantType;
-    @BindView(R.id.visitTypeFAB)
-    FloatingActionButton mFABVisitType;
-    @BindView(R.id.coffeeTypeFAB)
-    FloatingActionButton mFABCoffeeType;
-    @BindView(R.id.transportFAB)
-    FloatingActionButton mFABTransport;
-    @BindView(R.id.drivingFAB)
-    FloatingActionButton mFABDriving;
-    @BindView(R.id.walkingFAB)
-    FloatingActionButton mFABWalking;
-    @BindView(R.id.scheduleButton)
-    FloatingActionButton mFABScheduleButton;
+    @BindView(R.id.recyclerViewItemNearby) RecyclerView mRecyclerView;
+    @BindView(R.id.durationTextView) TextView mDurationTextView;
+    @BindView(R.id.addressTextView) TextView mAddressTextView;
+    @BindView(R.id.scrollView) ScrollView mScrollView;
+    @BindView(R.id.searchPlacesFAB) FloatingActionButton mFABsearchPlacesButton;
+    @BindView(R.id.restaurantTypeFAB) FloatingActionButton mFABRestaurantType;
+    @BindView(R.id.visitTypeFAB) FloatingActionButton mFABVisitType;
+    @BindView(R.id.coffeeTypeFAB) FloatingActionButton mFABCoffeeType;
+    @BindView(R.id.transportFAB) FloatingActionButton mFABTransport;
+    @BindView(R.id.drivingFAB) FloatingActionButton mFABDriving;
+    @BindView(R.id.walkingFAB) FloatingActionButton mFABWalking;
+    @BindView(R.id.scheduleButton) FloatingActionButton mFABScheduleButton;
     @BindView(R.id.positionFAB) FloatingActionButton mFABPosition;
 
     private GoogleApiClient mClient;
@@ -145,6 +131,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     private long mTime;
     private User mUser;
     private HashMap<String, User> hashMap;
+    private Location mLastLocation;
 
     @Nullable
     @Override
@@ -153,22 +140,31 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         FontHelper.setCustomTypeface(view);
         ButterKnife.bind(this, view);
 
+        mFABRestaurantType.setOnClickListener(this);
+        mFABCoffeeType.setOnClickListener(this);
+        mFABVisitType.setOnClickListener(this);
+        mFABPosition.setOnClickListener(this);
+        mFABTransport.setOnClickListener(this);
+        mFABDriving.setOnClickListener(this);
+        mFABWalking.setOnClickListener(this);
+
         hashMap = new HashMap<>();
 
         mFriend = new ArrayList<>();
 
         mToken = FirebaseInstanceId.getInstance().getToken();
-        mOwnerProfilPic = getArguments().getString(PageAdapter.URL_PROFIL_PIC);
-        mIdFacebook = getArguments().getString(PageAdapter.ID_FACEBOOK);
-        mUsername = getArguments().getString(PageAdapter.USERNAME);
+        if(getArguments() != null) {
+            mOwnerProfilPic = getArguments().getString(PageAdapter.URL_PROFIL_PIC);
+            mIdFacebook = Profile.getCurrentProfile().getId();
+            mUsername = getArguments().getString(PageAdapter.USERNAME);
+        }
 
         buildGoogleApiClient();
-        setFriends();
         setDate();
 
-        if (MainActivity.mIdFacebook != null) {
+        if (Profile.getCurrentProfile().getId() != null) {
             FirebaseDatabase database = FirebaseDatabase.getInstance();
-            mDatabaseReference = database.getReference().child("users").child(MainActivity.mIdFacebook);
+            mDatabaseReference = database.getReference().child("users").child(Profile.getCurrentProfile().getId());
         }
 
         mPlaceNearbyCreator = new PlaceNearbyCreator(getActivity(), mRecyclerView);
@@ -177,7 +173,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mFABsearchPlacesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onAddPlaceButtonClicked(view);
+                onPlacePickerClicked(view);
             }
         });
 
@@ -202,132 +198,96 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         });
     }
 
-    private void setPlaceType(final Location lastLocation) {
-
-        mPlaceNearbyCreator.getWebServicesPlaceApi(lastLocation, "");
-        mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(this);
-
-        resestDesign(mFABsearchPlacesButton, mFABRestaurantType, mFABCoffeeType,
-                mFABVisitType, R.color.colorPrimary, R.color.colorPrimary);
-
-        mFABRestaurantType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.restaurantTypeFAB:
                 resetDesignTrajectsTypes();
                 setVisibility();
                 resestDesign(mFABsearchPlacesButton, mFABCoffeeType, mFABVisitType,
                         mFABRestaurantType, R.color.colorPrimary, R.color.colorSecondary);
 
-                mPlaceNearbyCreator.getWebServicesPlaceApi(lastLocation, "restaurant");
+                mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation, "restaurant");
                 mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
-            }
-        });
-        mFABCoffeeType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
+                break;
+            case R.id.coffeeTypeFAB:
                 resetDesignTrajectsTypes();
                 setVisibility();
                 resestDesign(mFABsearchPlacesButton, mFABRestaurantType, mFABVisitType,
                         mFABCoffeeType, R.color.colorPrimary, R.color.colorSecondary);
 
-                mPlaceNearbyCreator.getWebServicesPlaceApi(lastLocation, "cafe");
+                mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation, "cafe");
                 mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
-            }
-        });
-        mFABVisitType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            case R.id.visitTypeFAB:
 
                 resetDesignTrajectsTypes();
                 setVisibility();
                 resestDesign(mFABsearchPlacesButton, mFABRestaurantType, mFABCoffeeType,
                         mFABVisitType, R.color.colorPrimary, R.color.colorSecondary);
 
-                mPlaceNearbyCreator.getWebServicesPlaceApi(lastLocation,
+                mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation,
                         "art_gallery|movie_theater|museum");
                 mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
-            }
-        });
-    }
-
-    private void setTransportType(final double latitude, final double longitude) {
-
-        resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
-                R.color.colorPrimary, R.color.colorSecondary);
-        mTransportType = 0;
-        setRoadItinerary(new LatLng(latitude, longitude), "null");
-        mDurationTextView.setText("");
-
-        mFABPosition.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            case R.id.positionFAB:
                 resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
                         R.color.colorPrimary, R.color.colorSecondary);
                 mTransportType = 0;
                 mDurationTextView.setText("");
-                setRoadItinerary(new LatLng(latitude, longitude), "null");
-            }
-        });
-
-        mFABTransport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
+                initializeRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "null");
+                break;
+            case R.id.transportFAB :
                 resestDesign(mFABWalking, mFABDriving, mFABPosition, mFABTransport,
                         R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "transit");
+                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, mLatitudeDestination,
+                        mLongitudeDestination, "transit");
                 mTransportType = 2;
-                setRoadItinerary(new LatLng(latitude, longitude), "transit");
-            }
-        });
-        mFABDriving.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
+                initializeRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "transit");
+                break;
+            case R.id.drivingFAB :
                 resestDesign(mFABTransport, mFABWalking, mFABPosition, mFABDriving,
                         R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "driving");
+                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, mLatitudeDestination,
+                        mLongitudeDestination, "driving");
                 mTransportType = 3;
-                setRoadItinerary(new LatLng(latitude, longitude), "driving");
-
-            }
-        });
-        mFABWalking.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
+                initializeRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "driving");
+                break;
+            case R.id.walkingFAB :
                 resestDesign(mFABDriving, mFABTransport, mFABPosition, mFABWalking,
                         R.color.colorPrimary, R.color.colorSecondary);
 
-                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, latitude,
-                        longitude, "walking");
+                mTrajectCreator.getWebServicesPlaceApi(mMyLatitude, mMyLongitude, mLatitudeDestination,
+                        mLongitudeDestination, "walking");
                 mTransportType = 4;
-                setRoadItinerary(new LatLng(latitude, longitude), "walking");
-            }
-        });
-    }
-
-    private void setRoadItinerary(LatLng latLng, String mode) {
-        if (mRoutesCreator != null) {
-            mRoutesCreator.addPoint(new LatLng(mMyLatitude, mMyLongitude));
-            mRoutesCreator.initializeRoute(latLng, mode);
+                initializeRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "walking");
+                break;
+            default:
+                initializePlaceType();
+                initializeTransportType();
+                break;
         }
     }
 
-    private void setFriends() {
-        Fragment savedFragment = getChildFragmentManager().findFragmentByTag(FRIEND_FRAGMENT);
-        if (savedFragment == null) {
-            FriendsFragment friendsFragment = new FriendsFragment();
-            friendsFragment.setTargetFragment(ForeseeFragment.this, FRIEND_CHOOSED);
-            getFragmentManager().beginTransaction().add(R.id.rlfrag, friendsFragment).commit();
-        } else {
-            getFragmentManager().beginTransaction().add(R.id.rlfrag, savedFragment).commit();
+    private void initializePlaceType() {
+        mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation, "");
+        mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(this);
+    }
+
+    private void initializeTransportType() {
+        resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
+                R.color.colorPrimary, R.color.colorSecondary);
+        mTransportType = 0;
+        initializeRoadItinerary(new LatLng(mLatitudeDestination, mLongitudeDestination), "null");
+        mDurationTextView.setText("");
+    }
+
+    private void initializeRoadItinerary(LatLng latLng, String mode) {
+        if (mRoutesCreator != null) {
+            mRoutesCreator.addPoint(new LatLng(mMyLatitude, mMyLongitude));
+            mRoutesCreator.initializeRoute(latLng, mode);
         }
     }
 
@@ -381,9 +341,10 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         LocationServices.getFusedLocationProviderClient(getActivity()).getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
+                mLastLocation = location;
                 mMyLatitude = location.getLatitude();
                 mMyLongitude = location.getLongitude();
-                setPlaceType(location);
+                initializePlaceType();
                 SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
                 mapFragment.getMapAsync(ForeseeFragment.this);
 
@@ -462,11 +423,11 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mLatitudeDestination = latitude;
         mLongitudeDestination = longitude;
         mNamePlace = name;
-        setTransportType(latitude, longitude);
-        setRoadItinerary(new LatLng(latitude, longitude), "null");
+        initializeTransportType();
+        initializeRoadItinerary(new LatLng(latitude, longitude), "null");
     }
 
-    public void onAddPlaceButtonClicked(View view) {
+    public void onPlacePickerClicked(View view) {
         if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getActivity(), getString(R.string.need_location_permission_message), Toast.LENGTH_LONG).show();
@@ -492,7 +453,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             mLongitudeDestination = place.getLatLng().longitude;
 
             mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView);
-            setTransportType(mLatitudeDestination, mLongitudeDestination);
+            initializeTransportType();
             resetDesignAfterActivityResult(mNamePlace, address);
 
         }
@@ -520,22 +481,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                     postRequestToServer();
                     setEvent(mFriend);
                 }
-            }
-        }
-
-        if(requestCode == FRIEND_CHOOSED){
-            if(resultCode == RESULT_OK){
-                Bundle bundle = data.getExtras();
-                String id = (String) bundle.get("id");
-                User user  = (User) bundle.get("user");
-
-                if(hashMap.containsKey(id)){
-                    hashMap.remove(id);
-                } else {
-                    hashMap.put(id, user);
-                }
-
-                mFriend = new ArrayList<>(hashMap.values());
             }
         }
     }
@@ -568,6 +513,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     public void onStart() {
         super.onStart();
         mClient.connect();
+        mScrollView.smoothScrollTo(0,0);
     }
 
     @Override
@@ -620,5 +566,16 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     private void setVisibility() {
         mRecyclerView.setVisibility(View.VISIBLE);
         mAddressTextView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onFriendSelectioned(User user, String id) {
+        if(hashMap.containsKey(id)){
+            hashMap.remove(id);
+        } else {
+            hashMap.put(id, user);
+        }
+
+        mFriend = new ArrayList<>(hashMap.values());
     }
 }
