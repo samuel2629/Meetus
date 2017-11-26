@@ -26,11 +26,11 @@ public class TrajectCreator {
     private static TextView mDurationView;
 
     public interface AsyncResponseDuration {
-        void processFinish(String output);
+        void taskParsedAndOutput(String output);
     }
 
     public interface AsyncResponse {
-        void processAlmostFinish(String output);
+        void parsingTask(String output);
     }
 
     public TrajectCreator(Context context, TextView durationView){
@@ -121,7 +121,7 @@ public class TrajectCreator {
             ParserTask parserTask = new ParserTask();
             parserTask.execute(result);
             if(delegate != null){
-                delegate.processAlmostFinish(result);
+                delegate.parsingTask(result);
             }
         }
     }
@@ -167,7 +167,7 @@ public class TrajectCreator {
                 mDurationView.setText(duration);
             }
             if(delegate != null){
-                delegate.processFinish(mDurationInSeconds);
+                delegate.taskParsedAndOutput(mDurationInSeconds);
             }
         }
     }

@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.facebook.Profile;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,12 +48,12 @@ public class PersonalCalendarFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<ScheduledEvent>(),System.currentTimeMillis()/1000L);
+        mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<>(),System.currentTimeMillis()/1000L);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapterSectioned);
         mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("users")
-                .child(MainActivity.mIdFacebook).child("scheduledEvent");
+                .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
 
         mChildEventListener = new ChildEventListener() {
             @Override
@@ -92,6 +93,12 @@ public class PersonalCalendarFragment extends Fragment {
             mDatabaseReference.orderByChild("tp").addChildEventListener(mChildEventListener);
             mAdapterSectioned.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setUserVisibleHint(true);
     }
 
     @Override

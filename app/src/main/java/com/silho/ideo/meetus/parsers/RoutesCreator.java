@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -79,23 +80,28 @@ public class RoutesCreator {
 
         options.position(point);
 
-        if(mMarkerPoint.size()==1){
-            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        }else if(mMarkerPoint.size()==2){
+        if(mode.equals("null")){
             options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        }
+            mMap.addMarker(options);
+        } else {
+            if (mMarkerPoint.size() == 1) {
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            } else if (mMarkerPoint.size() == 2) {
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            }
 
-        mMap.addMarker(options);
+            mMap.addMarker(options);
 
-        if(mMarkerPoint.size() >= 2){
-            LatLng origin = mMarkerPoint.get(0);
-            LatLng dest = mMarkerPoint.get(1);
+            if (mMarkerPoint.size() >= 2) {
+                LatLng origin = mMarkerPoint.get(0);
+                LatLng dest = mMarkerPoint.get(1);
 
-            String url = getDirectionsUrl(origin, dest, mode);
+                String url = getDirectionsUrl(origin, dest, mode);
 
-            DownloadTask downloadTask = new DownloadTask();
+                DownloadTask downloadTask = new DownloadTask();
 
-            downloadTask.execute(url);
+                downloadTask.execute(url);
+            }
         }
     }
 
@@ -219,7 +225,6 @@ public class RoutesCreator {
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
             ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
 
             // Traversing through all the routes
             for(int i=0;i<result.size();i++){

@@ -17,10 +17,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.Profile;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.InvitationResumerActivity;
+import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
@@ -72,12 +73,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
                 if(mTodayEvents.isEmpty()){
                     return "Nothing Scheduled For Today.";
                 }
-                return "Within 24 Hours";
+                return "Today";
             case 1:
                 if(mTomorrowEvents.isEmpty()){
                     return null;
                 }
-                return "The Next Day";
+                return "Tomorrow";
             case 2:
                 if(mScheduledEvents.isEmpty()){
                     return null;
@@ -117,12 +118,8 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     protected void onBindItemViewHolder(ViewHolder holder, final int section, final int position) {
         holder.bindEvent(section, position);
         FontHelper.setCustomTypeface(holder.itemView);
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                deleteDialogFragment(section, position).show();
-                return true;
-            }
+        holder.itemView.setOnLongClickListener(view -> {deleteDialogFragment(section, position).show();
+            return true;
         });
     }
 
@@ -131,32 +128,24 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         builder.setTitle("Delete");
         builder.setMessage("Are you sure ?");
 
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(MainActivity.mIdFacebook).child("scheduledEvent");
-                if(section == 0){
-                    mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
-                    mTodayEvents.remove(position);
-                    notifyDataSetChanged();
-                } else if (section == 1){
-                    mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
-                    mTomorrowEvents.remove(position);
-                    notifyDataSetChanged();
-                } else {
-                    mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
-                    mScheduledEvents.remove(position);
-                    notifyDataSetChanged();
-                }
+        builder.setPositiveButton("Yes", (dialogInterface, i) -> {
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
+            if(section == 0){
+                mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
+                mTodayEvents.remove(position);
+                notifyDataSetChanged();
+            } else if (section == 1){
+                mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
+                mTomorrowEvents.remove(position);
+                notifyDataSetChanged();
+            } else {
+                mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
+                mScheduledEvents.remove(position);
+                notifyDataSetChanged();
             }
         });
 
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setNegativeButton("No", (dialogInterface, i) -> dialogInterface.dismiss());
         return builder.create();
     }
 
@@ -186,6 +175,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         private double mLatDest, mLongDest;
         private String mPlaceName;
         private boolean mIsScheduled;
+        private int mTransportType;
         private ArrayList<User> mFriends;
 
 
@@ -210,6 +200,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             mPlaceName = scheduledEvent.getPlaceName();
             mIsScheduled = scheduledEvent.getIsScheduled();
             mFriends = scheduledEvent.getUsers();
+            mTransportType = scheduledEvent.getTransportType();
 
             if(mIsScheduled){
                 mImageView.setImageResource(R.drawable.ic_fiber_manual_record_green_24dp);
@@ -251,11 +242,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
 
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent(mContext, InvitationResumerActivity.class);
+            Intent intent = new Intent(mContext, EventResumerActivity.class);
             intent.putExtra(MyFirebaseMessagingService.TIME, mTime);
             intent.putExtra(MyFirebaseMessagingService.LATITUDE_DEST, mLatDest);
             intent.putExtra(MyFirebaseMessagingService.LONGITUDE_DEST, mLongDest);
             intent.putExtra(MyFirebaseMessagingService.PLACE_NAME, mPlaceName);
+            intent.putExtra(MyFirebaseMessagingService.TRANSPORT_TYPE, mTransportType);
             if(mFriends != null){
                 intent.putExtra(MyFirebaseMessagingService.FRIENDS_LIST_INVITED, mFriends);
             }

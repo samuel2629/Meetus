@@ -27,7 +27,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3">
+        android:layout_weight="5">
 
         <fragment
             android:id="@+id/map"
@@ -36,22 +36,21 @@
             android:layout_height="match_parent"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_gravity="center"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="8dp">
+            android:padding="8dp">
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/bikingFAB"
+                android:id="@+id/positionFAB"
                 style="@style/TypeFABThemeInvitationResumer"
                 app:backgroundTint="@color/colorPrimary"
                 app:elevation="2dp"
+                android:layout_margin="4dp"
                 app:fabSize="mini"
+                android:layout_gravity="center"
                 app:rippleColor="@color/colorSecondary"
-                app:srcCompat="@drawable/ic_directions_bike_black_24dp"/>
+                app:srcCompat="@drawable/ic_room_black_24dp"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/transportFAB"
@@ -59,6 +58,8 @@
                 app:backgroundTint="@color/colorPrimary"
                 app:elevation="2dp"
                 app:fabSize="mini"
+                android:layout_margin="4dp"
+                android:layout_gravity="center"
                 app:rippleColor="@color/colorSecondary"
                 app:srcCompat="@drawable/ic_directions_bus_black_24dp"/>
 
@@ -67,7 +68,9 @@
                 style="@style/TypeFABThemeInvitationResumer"
                 app:backgroundTint="@color/colorPrimary"
                 app:elevation="2dp"
+                android:layout_margin="4dp"
                 app:fabSize="mini"
+                android:layout_gravity="center"
                 app:rippleColor="@color/colorSecondary"
                 app:srcCompat="@drawable/ic_directions_car_black_24dp"/>
 
@@ -76,6 +79,8 @@
                 style="@style/TypeFABThemeInvitationResumer"
                 app:backgroundTint="@color/colorPrimary"
                 app:elevation="2dp"
+                android:layout_margin="4dp"
+                android:layout_gravity="center"
                 app:fabSize="mini"
                 app:rippleColor="@color/colorSecondary"
                 app:srcCompat="@drawable/ic_directions_walk_black_24dp"
@@ -83,10 +88,50 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right|end"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="8dp">
+
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/accept_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                app:backgroundTint="@color/colorPrimary"
+                app:elevation="2dp"
+                app:fabSize="mini"
+                app:rippleColor="@color/colorSecondary"
+                app:srcCompat="@drawable/ic_done_black_24dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/decline_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                app:backgroundTint="@color/colorPrimary"
+                app:elevation="2dp"
+                app:fabSize="mini"
+                app:rippleColor="@color/colorPrimary"
+                app:srcCompat="@drawable/ic_clear_black_24dp"/>
+
+
+        </LinearLayout>
+
+
+
 
     </FrameLayout>
 
-        <LinearLayout
+    <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -143,43 +188,6 @@
             android:layout_height="match_parent"/>
     </FrameLayout>
 
-    <LinearLayout
-        android:background="@color/colorBackground"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:orientation="horizontal">
-
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/accept_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:backgroundTint="@color/colorPrimary"
-            app:elevation="2dp"
-            app:fabSize="mini"
-            android:layout_gravity="center"
-            app:rippleColor="@color/colorSecondary"
-            app:srcCompat="@drawable/ic_done_black_24dp"
-            android:layout_margin="16dp"/>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/decline_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:backgroundTint="@color/colorPrimary"
-            app:elevation="2dp"
-            app:fabSize="mini"
-            android:layout_gravity="center"
-            android:layout_margin="16dp"
-            app:rippleColor="@color/colorPrimary"
-            app:srcCompat="@drawable/ic_clear_black_24dp"/>
-
-
-    </LinearLayout>
 </LinearLayout>
 </android.support.v7.widget.CardView>
 </RelativeLayout>

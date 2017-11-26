@@ -21,12 +21,13 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.Profile;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.controller.firebaseJobDispatcher.ReminderScheduler;
+import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
@@ -42,7 +43,6 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static String mIdFacebook;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.container_frameLayout) FrameLayout mFrameLayout;
@@ -64,10 +64,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         FontHelper.setCustomTypeface(mFrameLayout);
 
-        ReminderScheduler.scheduleReminder(this);
-
         setSupportActionBar(mToolbar);
-        mToolbar.setElevation(4.0f);
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ){mToolbar.setElevation(4.0f);}
         MainActivity.this.setTitle("");
 
         String title = "Scheduler";
@@ -82,27 +80,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void login() {
         mAuth = FirebaseAuth.getInstance();
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    if(!mAuthFlag){
-                        getFacebookDataInfo();
-                        mAuthFlag=true;
-                    }
-                } else {
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(Arrays.asList
-                                            (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                    .setTheme(R.style.LoginTheme)
-                                    .build(),
-                            RC_SIGN_IN);
+        mAuthStateListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                if(!mAuthFlag){
+                    getFacebookDataInfo();
+                    ReminderScheduler.scheduleReminder(MainActivity.this);
+                    mAuthFlag=true;
                 }
+            } else {
+                startActivityForResult(
+                        AuthUI.getInstance()
+                                .createSignInIntentBuilder()
+                                .setIsSmartLockEnabled(false)
+                                .setAvailableProviders(Arrays.asList
+                                        (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
+                                                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
+                                .setTheme(R.style.LoginTheme)
+                                .build(),
+                        RC_SIGN_IN);
             }
         };
     }
@@ -123,19 +119,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Bundle parameters = new Bundle();
             parameters.putString("fields", "id,name,picture.type(large)");
             new GraphRequest(AccessToken.getCurrentAccessToken(),
-                    "/me", parameters, HttpMethod.GET, new GraphRequest.Callback() {
-                @Override
-                public void onCompleted(GraphResponse response) {
-                    JSONObject data = response.getJSONObject();
-                    if (data.has("picture")) {
-                        try {
-                            setUserDataUI(data);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                    "/me", parameters, HttpMethod.GET, response -> {
+                        JSONObject data = response.getJSONObject();
+                        if (data.has("picture")) {
+                            try {
+                                setUserDataUI(data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                }
-            }).executeAsync();
+                    }).executeAsync();
         }
 
         else {
@@ -145,25 +138,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void setUserDataUI(JSONObject data) throws JSONException {
         String name = data.getString("name");
-        mIdFacebook = data.getString("id");
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
 
-        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, mIdFacebook, name, profilPic);
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, name, profilPic);
         mViewPager.setAdapter(pageAdapter);
         mViewPager.setCurrentItem(1, true);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if(position == 1){
-                    mToolBarTitle.setText("Scheduler");
-                } else if(position == 0){
-                    mToolBarTitle.setText("Calendar");
-                }
             }
 
             @Override
             public void onPageSelected(int position) {
+                if(position == 0) {
+                    mToolBarTitle.setText(R.string.calendar_viewpager_title);
+                } else if(position == 1){
+                    mToolBarTitle.setText(R.string.scheduler_viewpager_title);
+                }
             }
 
             @Override

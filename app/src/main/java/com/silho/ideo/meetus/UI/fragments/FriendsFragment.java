@@ -48,8 +48,14 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
     RecyclerView recyclerView;
     TextView emptyText;
     private FriendsAdapter mFriendsAdapter;
+    private OnFriendSelectionListener mOnFriendSelectionListener;
 
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        onAttachToParentFragment(getParentFragment());
+    }
 
     @Nullable
     @Override
@@ -57,44 +63,54 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
         ButterKnife.bind(this, view);
 
-        emptyText = (TextView) view.findViewById(R.id.emptyText);
+        emptyText = view.findViewById(R.id.emptyText);
         emptyText.setVisibility(View.GONE);
-
-        if (AccessToken.getCurrentAccessToken() == null) {
-            getActivity().finish();
-        }
-
-        recyclerView = (RecyclerView) view.findViewById(R.id.friendRecyclerView);
+        recyclerView = view.findViewById(R.id.friendRecyclerView);
         callbackManager = CallbackManager.Factory.create();
-
-        SearchView searchView = (SearchView) view.findViewById(R.id.searchFriend);
+        SearchView searchView = view.findViewById(R.id.searchFriend);
         searchView.setOnQueryTextListener(this);
 
-        Set permissions = AccessToken.getCurrentAccessToken().getPermissions();
-        if (permissions.contains("user_friends")) {
-            fetchFriends();
-        }
-        else {
-            LoginManager loginManager = LoginManager.getInstance();
-            loginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-                @Override
-                public void onSuccess(LoginResult loginResult) {
-                    fetchFriends();
-                }
+        if(AccessToken.getCurrentAccessToken() != null) {
+            Set permissions = AccessToken.getCurrentAccessToken().getPermissions();
+            if (permissions.contains("user_friends")) {
+                fetchFriends();
+            } else {
+                LoginManager loginManager = LoginManager.getInstance();
+                loginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        fetchFriends();
+                    }
 
-                @Override
-                public void onCancel() {
-                    String permissionMsg = getResources().getString(R.string.permission_message);
-                    Toast.makeText(getActivity(), permissionMsg, Toast.LENGTH_LONG).show();
-                    getActivity().finish();
-                }
+                    @Override
+                    public void onCancel() {
+                        String permissionMsg = getResources().getString(R.string.permission_message);
+                        Toast.makeText(getActivity(), permissionMsg, Toast.LENGTH_LONG).show();
+                        getActivity().finish();
+                    }
 
-                @Override
-                public void onError(FacebookException error) {}
-            });
-            loginManager.logInWithReadPermissions(this, Arrays.asList("user_friends"));
+                    @Override
+                    public void onError(FacebookException error) {
+                    }
+                });
+                loginManager.logInWithReadPermissions(this, Arrays.asList("user_friends"));
+            }
         }
         return view;
+    }
+
+    public interface OnFriendSelectionListener{
+        public void onFriendSelectioned(User user, String id);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnFriendSelectionListener = (OnFriendSelectionListener)fragment;
+        } catch (ClassCastException e){
+            throw new ClassCastException(
+              fragment.toString() + "must implement OnFriendSelectionListener"
+            );
+        }
     }
 
     @Override
@@ -169,6 +185,6 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
         Intent intent = new Intent();
         intent.putExtra("user", user);
         intent.putExtra("id", id);
-        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
+        mOnFriendSelectionListener.onFriendSelectioned(user, id);
     }
 }
