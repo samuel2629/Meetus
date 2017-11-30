@@ -43,7 +43,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -54,7 +53,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.parsers.PlaceNearbyCreator;
@@ -63,7 +61,6 @@ import com.silho.ideo.meetus.parsers.TrajectCreator;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
-import com.silho.ideo.meetus.utils.WorkaroundMapFragment;
 
 import org.json.JSONArray;
 
@@ -81,12 +78,12 @@ import static android.app.Activity.RESULT_OK;
  * Created by Samuel on 01/08/2017.
  */
 
-public class ForeseeFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
+public class ScheduleEventFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationSource.OnLocationChangedListener,
         LocationListener, ItemNearbyAdapter.OnItemClicked, OnMapReadyCallback,
         FriendsFragment.OnFriendSelectionListener, View.OnClickListener {
 
-    private static final String TAG = ForeseeFragment.class.getSimpleName();
+    private static final String TAG = ScheduleEventFragment.class.getSimpleName();
     private static final int PLACE_PICKER_REQUEST = 2;
     private static final int DATE_PICKER = 3;
     private static final int TIME_PICKER = 4;
@@ -149,7 +146,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         mFABWalking.setOnClickListener(this);
 
         hashMap = new HashMap<>();
-
         mFriend = new ArrayList<>();
 
         mToken = FirebaseInstanceId.getInstance().getToken();
@@ -161,21 +157,12 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
         buildGoogleApiClient();
         setDate();
-
-        if (Profile.getCurrentProfile().getId() != null) {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            mDatabaseReference = database.getReference().child("users").child(Profile.getCurrentProfile().getId());
-        }
-
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        mDatabaseReference = database.getReference().child("users").child(Profile.getCurrentProfile().getId());
         mPlaceNearbyCreator = new PlaceNearbyCreator(getActivity(), mRecyclerView);
         mTrajectCreator = new TrajectCreator(getActivity(), mDurationTextView);
 
-        mFABsearchPlacesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onPlacePickerClicked(view);
-            }
-        });
+        mFABsearchPlacesButton.setOnClickListener(this::onPlacePickerClicked);
 
         return view;
     }
@@ -189,13 +176,9 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
         googleMap.addMarker(new MarkerOptions().position(myLatLng).title("I'm Here"));
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 10);
         googleMap.moveCamera(cameraUpdate);
-        mRoutesCreator = new RoutesCreator(getActivity(), new ArrayList<LatLng>(), googleMap);
-        ((WorkaroundMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).setListener(new WorkaroundMapFragment.OnTouchListener() {
-            @Override
-            public void onTouch() {
-                mScrollView.requestDisallowInterceptTouchEvent(true);
-            }
-        });
+        mRoutesCreator = new RoutesCreator(getActivity(), new ArrayList<>(), googleMap);
+        ((WorkaroundMapFragment) getChildFragmentManager().findFragmentById(R.id.map))
+                .setListener(() -> mScrollView.requestDisallowInterceptTouchEvent(true));
     }
 
     @Override
@@ -208,7 +191,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                         mFABRestaurantType, R.color.colorPrimary, R.color.colorSecondary);
 
                 mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation, "restaurant");
-                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
+                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ScheduleEventFragment.this);
                 break;
             case R.id.coffeeTypeFAB:
                 resetDesignTrajectsTypes();
@@ -217,7 +200,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                         mFABCoffeeType, R.color.colorPrimary, R.color.colorSecondary);
 
                 mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation, "cafe");
-                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
+                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ScheduleEventFragment.this);
                 break;
             case R.id.visitTypeFAB:
 
@@ -228,7 +211,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
                 mPlaceNearbyCreator.getWebServicesPlaceApi(mLastLocation,
                         "art_gallery|movie_theater|museum");
-                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ForeseeFragment.this);
+                mPlaceNearbyCreator.initializeRecyclerviewAndAdapter(ScheduleEventFragment.this);
                 break;
             case R.id.positionFAB:
                 resestDesign(mFABTransport, mFABWalking, mFABDriving, mFABPosition,
@@ -292,13 +275,10 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     }
 
     private void setDate() {
-        mFABScheduleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DatePickerFragment datePickerFragment = new DatePickerFragment();
-                datePickerFragment.setTargetFragment(ForeseeFragment.this, DATE_PICKER);
-                datePickerFragment.show(getFragmentManager(), "datePicker");
-            }
+        mFABScheduleButton.setOnClickListener(view -> {
+            DatePickerFragment datePickerFragment = new DatePickerFragment();
+            datePickerFragment.setTargetFragment(ScheduleEventFragment.this, DATE_PICKER);
+            datePickerFragment.show(getFragmentManager(), "datePicker");
         });
     }
 
@@ -338,33 +318,30 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
     @SuppressLint("MissingPermission")
     private void setLocation() {
-        LocationServices.getFusedLocationProviderClient(getActivity()).getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                mLastLocation = location;
-                mMyLatitude = location.getLatitude();
-                mMyLongitude = location.getLongitude();
-                initializePlaceType();
-                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-                mapFragment.getMapAsync(ForeseeFragment.this);
+        LocationServices.getFusedLocationProviderClient(getActivity()).getLastLocation().addOnSuccessListener(getActivity(), location -> {
+            mLastLocation = location;
+            mMyLatitude = location.getLatitude();
+            mMyLongitude = location.getLongitude();
+            initializePlaceType();
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            mapFragment.getMapAsync(ScheduleEventFragment.this);
 
-                mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (!dataSnapshot.exists()) {
-                            mUser = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
-                            mDatabaseReference.setValue(mUser);
-                        } else {
-                            mDatabaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
-                        }
+            mDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) {
+                        mUser = new User(mToken, mMyLatitude, mMyLongitude, mIdFacebook, mUsername, mOwnerProfilPic);
+                        mDatabaseReference.setValue(mUser);
+                    } else {
+                        mDatabaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
                     }
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
-            }
+                }
+            });
         });
 
         LocationRequest locationRequest = LocationRequest.create()
@@ -465,7 +442,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
                 mDay = bundle.getInt("selectedDay");
 
                 TimePickerFragment timePickerFragment = new TimePickerFragment();
-                timePickerFragment.setTargetFragment(ForeseeFragment.this, TIME_PICKER);
+                timePickerFragment.setTargetFragment(ScheduleEventFragment.this, TIME_PICKER);
                 timePickerFragment.show(getFragmentManager(), "timePicker");
             }
         }

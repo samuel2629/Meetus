@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.utils;
+package com.silho.ideo.meetus.UI.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.widget.FrameLayout;

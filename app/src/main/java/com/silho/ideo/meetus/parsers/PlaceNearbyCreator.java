@@ -42,7 +42,7 @@ public class PlaceNearbyCreator {
 
     public void initializeRecyclerviewAndAdapter(ItemNearbyAdapter.OnItemClicked c) {
         SnapHelper helper = new LinearSnapHelper();
-        mItemNearbyAdapter = new ItemNearbyAdapter(mContext, new ArrayList<PlaceNearby>(), c);
+        mItemNearbyAdapter = new ItemNearbyAdapter(mContext, new ArrayList<>(), c);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setOnFlingListener(null);

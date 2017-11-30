@@ -5,7 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.silho.ideo.meetus.UI.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.UI.fragments.EventsNearByFragment;
+import com.silho.ideo.meetus.UI.fragments.ScheduleEventFragment;
 import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
 
 /**
@@ -38,6 +39,8 @@ public class PageAdapter extends FragmentStatePagerAdapter {
                 return new PersonalCalendarFragment();
             case 1:
                 return launchForeseeFragment();
+            case 2:
+                return new EventsNearByFragment();
             default:
                 return null;
         }
@@ -48,8 +51,8 @@ public class PageAdapter extends FragmentStatePagerAdapter {
         return POSITION_NONE;
     }
 
-    private ForeseeFragment launchForeseeFragment() {
-            ForeseeFragment foreseeFragment = new ForeseeFragment();
+    private ScheduleEventFragment launchForeseeFragment() {
+            ScheduleEventFragment foreseeFragment = new ScheduleEventFragment();
             Bundle bundle = new Bundle();
             bundle.putString(USERNAME,mName);
             bundle.putString(URL_PROFIL_PIC, mProfilPic);

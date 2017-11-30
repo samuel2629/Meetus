@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="horizontal"
+              android:padding="8dp"
+              android:layout_margin="8dp"
+              android:background="@color/colorBackground"
+              android:layout_height="120dp"
+              android:layout_width="match_parent">
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:padding="8dp"
+                  android:layout_gravity="center"
+                  android:layout_width="0dp"
+                  android:layout_weight="2"
+                  android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/eventNearByTitle"
+            style="@style/ItemNearByTheme"
+            tools:text="Concert Michel Fugain"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:fontFamily="sans-serif-smallcaps"
+            android:textSize="18sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/eventNearByDate"
+                android:layout_width="0dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/ItemNearByTheme"
+                tools:text="2017-12-01 19:00:00"
+                android:fontFamily="sans-serif-smallcaps"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/eventNearByPlace"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/ItemNearByTheme"
+                android:maxLines="1"
+                tools:text="Le Silo, 35 Quai du Lazaret Boulevard"
+                android:fontFamily="sans-serif-smallcaps"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/eventNearByDescription"
+            style="@style/ItemNearByTheme"
+            android:maxLines="3"
+            android:ellipsize="marquee"
+            tools:text="La Millet Safety Academy est ouverte à celles et ceux qui non seulement souhaitent s’informer sur les fondamentaux de la sécurité en montagne mais qui rêvent aussi d’apprendre les bons réflexes en hors-piste. Au programme de la Safety Academy #1 : une session d’information en magasin sur la préparation d’une sortie à ski, la gestion des risques (groupe, avalanche, nivologie) animées par des professionnels de la montagne. Mini contest surprise. Inscrivez-vous vite !  "
+            android:fontFamily="sans-serif-smallcaps"
+            android:textSize="12sp"/>
+    </LinearLayout>
+</LinearLayout>

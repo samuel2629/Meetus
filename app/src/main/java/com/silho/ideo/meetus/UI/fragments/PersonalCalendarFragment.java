@@ -3,11 +3,16 @@ package com.silho.ideo.meetus.UI.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,8 +38,7 @@ import butterknife.ButterKnife;
 
 public class PersonalCalendarFragment extends Fragment {
 
-    @BindView(R.id.reyclerViewCalendar)
-    RecyclerView mRecyclerView;
+    @BindView(R.id.reyclerViewCalendar) RecyclerView mRecyclerView;
 
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildEventListener;
@@ -106,5 +110,13 @@ public class PersonalCalendarFragment extends Fragment {
         menu.clear();
         inflater.inflate(R.menu.friend_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.search_item){
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

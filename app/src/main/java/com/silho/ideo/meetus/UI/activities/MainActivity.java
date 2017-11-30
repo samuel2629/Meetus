@@ -40,7 +40,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -141,8 +141,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
 
-        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, name, profilPic);
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 3, name, profilPic);
         mViewPager.setAdapter(pageAdapter);
+        mViewPager.setOffscreenPageLimit(3);
         mViewPager.setCurrentItem(1, true);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -155,6 +156,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     mToolBarTitle.setText(R.string.calendar_viewpager_title);
                 } else if(position == 1){
                     mToolBarTitle.setText(R.string.scheduler_viewpager_title);
+                } else if(position == 2){
+                    mToolBarTitle.setText(R.string.events);
                 }
             }
 
@@ -205,10 +208,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
     }
 }

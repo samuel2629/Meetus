@@ -37,4 +37,5 @@
     <string name="date_transition_name">date_transition</string>
     <string name="calendar_viewpager_title">Calendar</string>
     <string name="scheduler_viewpager_title">Scheduler</string>
+    <string name="events">Events</string>
 </resources>

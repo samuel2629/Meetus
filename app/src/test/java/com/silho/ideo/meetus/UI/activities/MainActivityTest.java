@@ -50,13 +50,8 @@ public class MainActivityTest {
 
     @Test
     public void isNetworkAvailable() throws Exception {
-        //Arrange
         boolean givenBoolean = true;
-
-        //Act
         boolean actualBoolean = mActivity.isNetworkAvailable();
-
-        //Assert
         assertEquals(givenBoolean, actualBoolean);
     }
 

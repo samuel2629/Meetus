@@ -100,7 +100,7 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
     }
 
     public interface OnFriendSelectionListener{
-        public void onFriendSelectioned(User user, String id);
+        void onFriendSelectioned(User user, String id);
     }
 
     public void onAttachToParentFragment(Fragment fragment){
@@ -128,40 +128,38 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
                 "/me/friends",
                 parameters,
                 HttpMethod.GET,
-                new GraphRequest.Callback() {
-                    public void onCompleted(GraphResponse response) {
-                        if (response.getError() != null) {
-                            Toast.makeText(getActivity(), response.getError().getErrorMessage(), Toast.LENGTH_LONG).show();
-                            return;
+                response -> {
+                    if (response.getError() != null) {
+                        Toast.makeText(getActivity(), response.getError().getErrorMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    List<FriendsAdapter.FriendItem> friendList = new ArrayList<>();
+
+                    JSONObject jsonResponse = response.getJSONObject();
+                    try {
+                        JSONArray jsonData = jsonResponse.getJSONArray("data");
+                        for (int i=0; i<jsonData.length(); i++) {
+                            JSONObject jsonUser = jsonData.getJSONObject(i);
+                            String id = jsonUser.getString("id");
+                            String name = jsonUser.getString("name");
+                            String image = jsonUser.getJSONObject("picture").getJSONObject("data").getString("url");
+
+                            FriendsAdapter.FriendItem friend = new FriendsAdapter.FriendItem(id, name, image);
+                            friendList.add(friend);
                         }
+                    }
+                    catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                        List<FriendsAdapter.FriendItem> friendList = new ArrayList<>();
+                    mFriendsAdapter = new FriendsAdapter(friendList, FriendsFragment.this);
+                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+                    recyclerView.setLayoutManager(layoutManager);
+                    recyclerView.setAdapter(mFriendsAdapter);
 
-                        JSONObject jsonResponse = response.getJSONObject();
-                        try {
-                            JSONArray jsonData = jsonResponse.getJSONArray("data");
-                            for (int i=0; i<jsonData.length(); i++) {
-                                JSONObject jsonUser = jsonData.getJSONObject(i);
-                                String id = jsonUser.getString("id");
-                                String name = jsonUser.getString("name");
-                                String image = jsonUser.getJSONObject("picture").getJSONObject("data").getString("url");
-
-                                FriendsAdapter.FriendItem friend = new FriendsAdapter.FriendItem(id, name, image);
-                                friendList.add(friend);
-                            }
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        mFriendsAdapter = new FriendsAdapter(friendList, FriendsFragment.this);
-                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-                        recyclerView.setLayoutManager(layoutManager);
-                        recyclerView.setAdapter(mFriendsAdapter);
-
-                        if (friendList.size() == 0) {
-                            emptyText.setVisibility(View.VISIBLE);
-                        }
+                    if (friendList.size() == 0) {
+                        emptyText.setVisibility(View.VISIBLE);
                     }
                 }
         ).executeAsync();
@@ -174,9 +172,8 @@ public class FriendsFragment extends Fragment implements SearchView.OnQueryTextL
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        String text = newText;
         if(mFriendsAdapter != null){
-        mFriendsAdapter.filter(text);}
+        mFriendsAdapter.filter(newText);}
         return false;
     }
 

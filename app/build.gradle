@@ -16,6 +16,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
 
         each { type ->
             type.buildConfigField STRING, 'GoogleApiKey', GOOGLE_API_KEY
@@ -68,6 +69,10 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
     compile 'com.truizlop.sectionedrecyclerview:library:1.2.0'
     compile 'com.evernote:android-job:1.1.11'
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-simplexml:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.android.support:multidex:1.0.1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.5.1'

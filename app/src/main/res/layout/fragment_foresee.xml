@@ -194,7 +194,7 @@
 
                 <fragment
                     android:id="@+id/map"
-                    class="com.silho.ideo.meetus.utils.WorkaroundMapFragment"
+                    class="com.silho.ideo.meetus.UI.fragments.WorkaroundMapFragment"
                     android:layout_width="match_parent"
                     android:layout_height="180dp"/>
 

@@ -1,7 +1,6 @@
 package com.silho.ideo.meetus.UI.activities;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.support.annotation.NonNull;
@@ -48,7 +47,7 @@ import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.parsers.RoutesCreator;
 import com.silho.ideo.meetus.parsers.TrajectCreator;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
-import com.silho.ideo.meetus.UI.fragments.ForeseeFragment;
+import com.silho.ideo.meetus.UI.fragments.ScheduleEventFragment;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
 
@@ -136,11 +135,11 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    ForeseeFragment.MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    ScheduleEventFragment.MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    ForeseeFragment.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+                    ScheduleEventFragment.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
         }
 
         mMyLatitude = LocationServices.FusedLocationApi.getLastLocation(mClient).getLatitude();

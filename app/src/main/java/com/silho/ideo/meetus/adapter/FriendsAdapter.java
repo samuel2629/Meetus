@@ -103,36 +103,33 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, isFollowing, c);
 
         if(mIsOnClickActivated){
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        holder.mView.setOnClickListener(view -> {
 
-                Context c = view.getContext();
-                String userID = Profile.getCurrentProfile().getId();
-                SharedPreferences prefs = c.getSharedPreferences(userID, 0);
-                SharedPreferences.Editor editor = prefs.edit();
+            Context c1 = view.getContext();
+            String userID = Profile.getCurrentProfile().getId();
+            SharedPreferences prefs1 = c1.getSharedPreferences(userID, 0);
+            SharedPreferences.Editor editor = prefs1.edit();
 
-                // switch following state for the given friend ID
-                boolean isFollowing = prefs.getBoolean(friendItem.id, false);
-                editor.putBoolean(friendItem.id, !isFollowing);
-                editor.apply();
+            // switch following state for the given friend ID
+            boolean isFollowing1 = prefs1.getBoolean(friendItem.id, false);
+            editor.putBoolean(friendItem.id, !isFollowing1);
+            editor.apply();
 
-                updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, !isFollowing, c);
+            updateFollowButton((LinearLayout)holder.mView, holder.mProfilePic, holder.mName, !isFollowing1, c1);
 
-                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(friendItem.id);
-                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User user = dataSnapshot.getValue(User.class);
-                        mListener.onItemFriendClicked(user, friendItem.id);
-                    }
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users").child(friendItem.id);
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    mListener.onItemFriendClicked(user, friendItem.id);
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
-            }
+                }
+            });
         });}
 
     }

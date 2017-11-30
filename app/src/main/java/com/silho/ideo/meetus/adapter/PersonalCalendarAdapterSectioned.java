@@ -71,27 +71,25 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         switch (section) {
             case 0:
                 if(mTodayEvents.isEmpty()){
-                    return "Nothing Scheduled For Today.";
+                    if(mTomorrowEvents.isEmpty()){
+                        return "Nothing Scheduled";
+                    }
+                    return "Relax ! Nothing Soon... ";
                 }
-                return "Today";
+                return "Coming Soon";
             case 1:
                 if(mTomorrowEvents.isEmpty()){
                     return null;
                 }
-                return "Tomorrow";
-            case 2:
-                if(mScheduledEvents.isEmpty()){
-                    return null;
-                }
-                return "Later";
+                return "Coming Later";
             default:
-                return "Later";
+                return null;
         }
     }
 
     @Override
     protected int getSectionCount() {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -101,8 +99,6 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
                 return mTodayEvents.size();
             case 1:
                 return mTomorrowEvents.size();
-            case 2:
-                return mScheduledEvents.size();
             default:
                 return mScheduledEvents.size();
         }
@@ -150,12 +146,10 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     }
 
     public void add(ScheduledEvent scheduledEvent){
-        if(mActualTime<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+86400){
+        if(mActualTime<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+43200){
             mTodayEvents.add(scheduledEvent);
-        } else if (mActualTime+86400<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+172800){
+        } else {
             mTomorrowEvents.add(scheduledEvent);
-        } else if (scheduledEvent.getTimestamp()>mActualTime+172800){
-            mScheduledEvents.add(scheduledEvent);
         }
         notifyDataSetChanged();
     }
@@ -263,10 +257,8 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         public void bindEvent(int section, int position) {
             if (section == 0){
                 bindEvent(mTodayEvents.get(position));
-            } else if (section == 1){
-                bindEvent(mTomorrowEvents.get(position));
             } else {
-                bindEvent(mScheduledEvents.get(position));
+                bindEvent(mTomorrowEvents.get(position));
             }
         }
     }
