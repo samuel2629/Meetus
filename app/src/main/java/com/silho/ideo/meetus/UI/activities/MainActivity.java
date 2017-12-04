@@ -1,5 +1,6 @@
 package com.silho.ideo.meetus.UI.activities;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +27,8 @@ import com.facebook.Profile;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.silho.ideo.meetus.UI.fragments.EventsNearByFragment;
+import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
@@ -55,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     private boolean mAuthFlag;
+    private int mPagePosition = 1;
+    private MenuItem mapMenuItem;
+    private MenuItem listMenuItem;
+    private boolean isOnMapItemMenuClicked;
+    private MenuItem renewMenuItem;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -63,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.app_bar_main);
         ButterKnife.bind(this);
         FontHelper.setCustomTypeface(mFrameLayout);
+
+        isOnMapItemMenuClicked = false;
 
         setSupportActionBar(mToolbar);
         if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ){mToolbar.setElevation(4.0f);}
@@ -141,23 +152,22 @@ public class MainActivity extends AppCompatActivity {
         String profilPic = data.getJSONObject("picture")
                 .getJSONObject("data").getString("url");
 
-        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 3, name, profilPic);
+        PageAdapter pageAdapter = new PageAdapter(getSupportFragmentManager(), 2, name, profilPic);
         mViewPager.setAdapter(pageAdapter);
-        mViewPager.setOffscreenPageLimit(3);
         mViewPager.setCurrentItem(1, true);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                invalidateOptionsMenu();
             }
 
             @Override
             public void onPageSelected(int position) {
+                mPagePosition = position;
                 if(position == 0) {
                     mToolBarTitle.setText(R.string.calendar_viewpager_title);
                 } else if(position == 1){
                     mToolBarTitle.setText(R.string.scheduler_viewpager_title);
-                } else if(position == 2){
-                    mToolBarTitle.setText(R.string.events);
                 }
             }
 
@@ -188,25 +198,65 @@ public class MainActivity extends AppCompatActivity {
         mAuth.addAuthStateListener(mAuthStateListener);}
     }
 
-    /** Menu's Methods **/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.grouped_menu, menu);
+        mapMenuItem = menu.findItem(R.id.map_item);
+        listMenuItem = menu.findItem(R.id.list_item_menu);
+        renewMenuItem = menu.findItem(R.id.renew);
+
+        if(mPagePosition == 1){
+            menu.findItem(R.id.renew).setVisible(true);
+            menu.findItem(R.id.map_item).setVisible(false);
+            menu.findItem(R.id.list_item_menu).setVisible(false);
+        } else if(mPagePosition == 0){
+            if(isOnMapItemMenuClicked){
+                listMenuAvailable();
+            } else {
+                mapMenuAvailable();
+            }
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    private void listMenuAvailable() {
+        renewMenuItem.setVisible(false);
+        mapMenuItem.setVisible(false);
+        listMenuItem.setVisible(true);
+    }
+
+    private void mapMenuAvailable() {
+        renewMenuItem.setVisible(false);
+        mapMenuItem.setVisible(true);
+        listMenuItem.setVisible(false);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.log_out) {
-            AuthUI.getInstance().signOut(this);
+        switch(item.getItemId()){
+            case R.id.renew:
+                recreate();
+                return true;
+            case R.id.map_item:
+                mapMenuItem.setVisible(false);
+                listMenuItem.setVisible(true);
+                getSupportFragmentManager().beginTransaction().replace(R.id.container_frameLayout, new EventsNearByFragment())
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+                listMenuAvailable();
+                isOnMapItemMenuClicked = true;
+                return true;
+            case R.id.list_item_menu:
+                mapMenuItem.setVisible(false);
+                listMenuItem.setVisible(true);
+                getSupportFragmentManager().beginTransaction().replace(R.id.container_frameLayout, new PersonalCalendarFragment())
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
+                mapMenuAvailable();
+                isOnMapItemMenuClicked = false;
+                return true;
+            case R.id.log_out:
+                AuthUI.getInstance().signOut(this);
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        if(id == R.id.renew){
-            recreate();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

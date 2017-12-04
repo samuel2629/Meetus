@@ -1,6 +1,5 @@
 package com.silho.ideo.meetus.adapter;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +10,8 @@ import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.model.EventfulResponse;
 import com.silho.ideo.meetus.utils.FontHelper;
 
+import java.util.ArrayList;
+
 /**
  * Created by Samuel on 30/11/2017.
  */
@@ -18,8 +19,14 @@ import com.silho.ideo.meetus.utils.FontHelper;
 public class EventNearByAdapter extends RecyclerView.Adapter<EventNearByAdapter.ItemEventNearbyViewHolder> {
 
     private EventfulResponse mEventfulResponse;
+    private EventNearByAdapter.OnMapSet mListener;
 
-    public EventNearByAdapter(EventfulResponse eventfulResponse){
+    public interface OnMapSet{
+        void onMapSet(ArrayList<Float> latitude, ArrayList<Float> longitude, ArrayList<String> title);
+    }
+
+    public EventNearByAdapter(EventfulResponse eventfulResponse, EventNearByAdapter.OnMapSet listener){
+        mListener = listener;
         mEventfulResponse = eventfulResponse;
     }
 
@@ -37,7 +44,11 @@ public class EventNearByAdapter extends RecyclerView.Adapter<EventNearByAdapter.
 
     @Override
     public int getItemCount() {
-        return mEventfulResponse.event.mEvents.size();
+        if(mEventfulResponse.event.mEvents != null) {
+            return mEventfulResponse.event.mEvents.size();
+        } else {
+            return 0;
+        }
     }
 
     public class ItemEventNearbyViewHolder extends RecyclerView.ViewHolder {
@@ -51,14 +62,27 @@ public class EventNearByAdapter extends RecyclerView.Adapter<EventNearByAdapter.
             description = itemView.findViewById(R.id.eventNearByDescription);
             date = itemView.findViewById(R.id.eventNearByDate);
             placeName = itemView.findViewById(R.id.eventNearByPlace);
+            itemView.getId();
         }
 
         public void bindEvent(EventfulResponse.Event event) {
             description.setVisibility(View.GONE);
             title.setText(event.getTitle());
-            //description.setText(event.getDescription());
             date.setText(event.getStartTime());
             placeName.setText(event.getPlaceName()+ ", " + event.getAddress());
+            passDataToFragment();
+        }
+
+        private void passDataToFragment() {
+            ArrayList<Float> latitudes = new ArrayList<>();
+            ArrayList<Float> longitudes = new ArrayList<>();
+            ArrayList<String> titles = new ArrayList<>();
+            for (EventfulResponse.Event e: mEventfulResponse.event.mEvents) {
+                latitudes.add(e.getLatitude());
+                longitudes.add(e.getLongitude());
+                titles.add(e.getTitle());
+            }
+            mListener.onMapSet(latitudes, longitudes, titles);
         }
     }
 }

@@ -3,12 +3,9 @@ package com.silho.ideo.meetus.UI.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,7 +20,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.UI.activities.MainActivity;
 import com.silho.ideo.meetus.adapter.PersonalCalendarAdapterSectioned;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 
@@ -49,8 +45,6 @@ public class PersonalCalendarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_personal_calendar, container, false);
         ButterKnife.bind(this, view);
-
-        setHasOptionsMenu(true);
 
         mAdapterSectioned = new PersonalCalendarAdapterSectioned(getContext(), new ArrayList<>(),System.currentTimeMillis()/1000L);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -103,20 +97,5 @@ public class PersonalCalendarFragment extends Fragment {
     public void onResume() {
         super.onResume();
         setUserVisibleHint(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.friend_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if(id == R.id.search_item){
-        }
-        return super.onOptionsItemSelected(item);
     }
 }

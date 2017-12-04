@@ -18,7 +18,7 @@ public class EventfulResponse {
     @Root(name = "events", strict = false)
     public static class EventList {
 
-        @ElementList(inline = true, name = "event")
+        @ElementList(inline = true, name = "event", required = false)
         public List<Event> mEvents;
     }
 

@@ -9,7 +9,7 @@ import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 public class Service {
 
-    public static EventfulApi getRecipe(){
+    public static EventfulApi getEvents(){
 
         return new Retrofit.Builder()
                 .baseUrl(EventfulApi.BASE_URL)

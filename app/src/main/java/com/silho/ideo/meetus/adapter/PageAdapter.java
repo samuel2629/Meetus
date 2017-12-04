@@ -5,9 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.silho.ideo.meetus.UI.fragments.EventsNearByFragment;
+import com.silho.ideo.meetus.UI.fragments.RootFragment;
 import com.silho.ideo.meetus.UI.fragments.ScheduleEventFragment;
-import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
 
 /**
  * Created by Samuel on 16/08/2017.
@@ -20,6 +19,7 @@ public class PageAdapter extends FragmentStatePagerAdapter {
 
     private int mInt;
     private String mName, mProfilPic;
+    FragmentManager mFragmentManager;
 
     public PageAdapter(FragmentManager fm) {
         super(fm);
@@ -27,6 +27,7 @@ public class PageAdapter extends FragmentStatePagerAdapter {
 
     public PageAdapter(FragmentManager fm, int i,String name, String profilPic) {
         super(fm);
+        mFragmentManager = fm;
         mInt = i;
         mName = name;
         mProfilPic = profilPic;
@@ -36,13 +37,11 @@ public class PageAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new PersonalCalendarFragment();
+                return new RootFragment();
             case 1:
-                return launchForeseeFragment();
-            case 2:
-                return new EventsNearByFragment();
+                return launchScheduleEventFragment();
             default:
-                return null;
+                return launchScheduleEventFragment();
         }
     }
 
@@ -51,7 +50,7 @@ public class PageAdapter extends FragmentStatePagerAdapter {
         return POSITION_NONE;
     }
 
-    private ScheduleEventFragment launchForeseeFragment() {
+    private ScheduleEventFragment launchScheduleEventFragment() {
             ScheduleEventFragment foreseeFragment = new ScheduleEventFragment();
             Bundle bundle = new Bundle();
             bundle.putString(USERNAME,mName);

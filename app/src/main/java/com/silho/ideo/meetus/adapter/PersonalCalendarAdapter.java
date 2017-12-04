@@ -1,12 +1,10 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -14,158 +12,76 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.facebook.Profile;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 import com.silho.ideo.meetus.controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
-import com.truizlop.sectionedrecyclerview.SimpleSectionedAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
- * Created by Samuel on 15/09/2017.
+ * Created by Samuel on 02/12/2017.
  */
 
-public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<PersonalCalendarAdapterSectioned.ViewHolder> {
-
+public class PersonalCalendarAdapter extends RecyclerView.Adapter<PersonalCalendarAdapter.ViewHolder> {
 
     private Context mContext;
+
+    public ArrayList<ScheduledEvent> getScheduledEvents() {
+        return mScheduledEvents;
+    }
+
     private ArrayList<ScheduledEvent> mScheduledEvents;
-    private long mActualTime;
-    private ArrayList<ScheduledEvent> mTodayEvents;
-    private ArrayList<ScheduledEvent> mTomorrowEvents;
-    private DatabaseReference mDatabase;
 
-    public PersonalCalendarAdapterSectioned(Context context, ArrayList<ScheduledEvent> scheduledEvents, long actualTime){
+    public PersonalCalendarAdapter(Context context, ArrayList<ScheduledEvent> scheduledEvents){
         mContext = context;
-        mScheduledEvents = scheduledEvents;
-        mActualTime = actualTime;
-        mTodayEvents = new ArrayList<>();
-        mTomorrowEvents = new ArrayList<>();
+        mScheduledEvents = scheduledEvents;}
 
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personal_calendar, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.header_title;
-    }
-
-    @Override
-    protected int getTitleTextID() {
-        return R.id.header_text;
-    }
-
-    @Override
-    protected String getSectionHeaderTitle(int section) {
-        switch (section) {
-            case 0:
-                if(mTodayEvents.isEmpty()){
-                    if(mTomorrowEvents.isEmpty()){
-                        return "Nothing Scheduled";
-                    }
-                    return "Relax ! Nothing Soon... ";
-                }
-                return "Coming Soon";
-            case 1:
-                if(mTomorrowEvents.isEmpty()){
-                    return null;
-                }
-                return "Coming Later";
-            default:
-                return null;
-        }
-    }
-
-    @Override
-    protected int getSectionCount() {
-        return 2;
-    }
-
-    @Override
-    protected int getItemCountForSection(int section) {
-        switch (section){
-            case 0:
-                return mTodayEvents.size();
-            case 1:
-                return mTomorrowEvents.size();
-            default:
-                return mScheduledEvents.size();
-        }
-    }
-
-    @Override
-    protected ViewHolder onCreateItemViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personal_calendar_sectionned, parent, false);
-        return new PersonalCalendarAdapterSectioned.ViewHolder(view);
-    }
-
-    @Override
-    protected void onBindItemViewHolder(ViewHolder holder, final int section, final int position) {
-        holder.bindEvent(section, position);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.bindEvent(position);
         FontHelper.setCustomTypeface(holder.itemView);
-        holder.itemView.setOnLongClickListener(view -> {deleteDialogFragment(section, position).show();
-            return true;
-        });
     }
 
-    private Dialog deleteDialogFragment(final int section, final int position) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle("Delete");
-        builder.setMessage("Are you sure ?");
-
-        builder.setPositiveButton("Yes", (dialogInterface, i) -> {
-            mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
-            if(section == 0){
-                mDatabase.child(Long.toString(mTodayEvents.get(position).getTimestamp())).removeValue();
-                mTodayEvents.remove(position);
-                notifyDataSetChanged();
-            } else if (section == 1){
-                mDatabase.child(Long.toString(mTomorrowEvents.get(position).getTimestamp())).removeValue();
-                mTomorrowEvents.remove(position);
-                notifyDataSetChanged();
-            } else {
-                mDatabase.child(Long.toString(mScheduledEvents.get(position).getTimestamp())).removeValue();
-                mScheduledEvents.remove(position);
-                notifyDataSetChanged();
-            }
-        });
-
-        builder.setNegativeButton("No", (dialogInterface, i) -> dialogInterface.dismiss());
-        return builder.create();
+    @Override
+    public int getItemCount() {
+        return mScheduledEvents.size();
     }
 
-    public void add(ScheduledEvent scheduledEvent){
-        if(mActualTime<scheduledEvent.getTimestamp() && scheduledEvent.getTimestamp()<mActualTime+43200){
-            mTodayEvents.add(scheduledEvent);
-            mScheduledEvents.add(scheduledEvent);
-        } else {
-            mTomorrowEvents.add(scheduledEvent);
-            mScheduledEvents.add(scheduledEvent);
-        }
+    public void add(List<ScheduledEvent> scheduledEvent){
+        mScheduledEvents.addAll(scheduledEvent);
         notifyDataSetChanged();
     }
 
     public void clear(){
-        mTodayEvents.clear();
-        mTomorrowEvents.clear();
         mScheduledEvents.clear();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public void add(ScheduledEvent scheduledEvent) {
+        mScheduledEvents.add(scheduledEvent);
+        notifyDataSetChanged();
+    }
 
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         private TextView mDateView, mTimeView, mPlaceNameView, mFriendsTextView;
         private ImageView mImageView;
-        private CardView mCardView;
+        private LinearLayout mLinearLayout;
         private long mTime;
         private double mLatDest, mLongDest;
         private String mPlaceName;
@@ -177,12 +93,12 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mCardView = itemView.findViewById(R.id.card_item_calendar);
             mFriendsTextView = itemView.findViewById(R.id.friendsTextView);
             mImageView = itemView.findViewById(R.id.confirmedDateImageView);
             mDateView = itemView.findViewById(R.id.dateTextView);
             mTimeView = itemView.findViewById(R.id.timeTextView);
             mPlaceNameView = itemView.findViewById(R.id.placeTextView);
+            mLinearLayout = itemView.findViewById(R.id.linearLayoutItemPersonalCalendar);
 
 
             itemView.setOnClickListener(this);
@@ -248,19 +164,15 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 Bundle optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        (Activity) mContext,mCardView,"card_transition").toBundle();
+                        (Activity) mContext,mLinearLayout,"card_transition").toBundle();
                 mContext.startActivity(intent, optionsCompat);
             } else {
                 mContext.startActivity(intent);
             }
         }
 
-        public void bindEvent(int section, int position) {
-            if (section == 0){
-                bindEvent(mTodayEvents.get(position));
-            } else {
-                bindEvent(mTomorrowEvents.get(position));
-            }
+        public void bindEvent(int position) {
+            bindEvent(mScheduledEvents.get(position));
         }
     }
 }

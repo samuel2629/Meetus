@@ -12,4 +12,15 @@
         android:icon="@drawable/ic_autorenew_black_24dp"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/map_item"
+        app:showAsAction="always"
+        android:title="map"
+        android:icon="@drawable/ic_map_black_24dp"/>
+
+    <item
+        android:id="@+id/list_item_menu"
+        app:showAsAction="always"
+        android:title="list"
+        android:icon="@drawable/ic_format_list_bulleted_black_24dp"/>
 </menu>

@@ -38,4 +38,6 @@
     <string name="calendar_viewpager_title">Calendar</string>
     <string name="scheduler_viewpager_title">Scheduler</string>
     <string name="events">Events</string>
+    <string name="my_events_button">My Events</string>
+    <string name="events_button">Events</string>
 </resources>

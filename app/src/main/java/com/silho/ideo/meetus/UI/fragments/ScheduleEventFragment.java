@@ -18,6 +18,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
@@ -25,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.Profile;
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -120,7 +124,6 @@ public class ScheduleEventFragment extends Fragment implements GoogleApiClient.C
     private String mOwnerProfilPic;
     private String mNamePlace;
     private int mTransportType = 0;
-
     private int mYear;
     private int mMonth;
     private int mDay;
@@ -500,8 +503,10 @@ public class ScheduleEventFragment extends Fragment implements GoogleApiClient.C
         if (mClient.isConnected()) {
             mClient.disconnect();
         }
-        SharedPreferences preferences = getContext().getSharedPreferences(Profile.getCurrentProfile().getId(), 0);
-        preferences.edit().clear().apply();
+        if(getContext().getSharedPreferences(Profile.getCurrentProfile().getId(),0) != null) {
+            SharedPreferences preferences = getContext().getSharedPreferences(Profile.getCurrentProfile().getId(), 0);
+            preferences.edit().clear().apply();
+        }
 
     }
 
