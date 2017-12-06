@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.parsers;
+package com.silho.ideo.meetus.parsersAndCreators;
 
 import android.content.Context;
 import android.location.Location;

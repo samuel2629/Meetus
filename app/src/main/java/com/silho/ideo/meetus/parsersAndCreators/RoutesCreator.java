@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.parsers;
+package com.silho.ideo.meetus.parsersAndCreators;
 
 import android.Manifest;
 import android.content.Context;
@@ -9,7 +9,6 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;

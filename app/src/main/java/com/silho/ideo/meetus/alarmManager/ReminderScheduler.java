@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.controller.alarmManager;
+package com.silho.ideo.meetus.alarmManager;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

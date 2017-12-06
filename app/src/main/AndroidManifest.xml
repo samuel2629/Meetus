@@ -17,17 +17,21 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <receiver android:name=".controller.geofencingPackages.GeofenceBroadcastReceiver"/>
+        <receiver android:name=".broadcastReceiver.BootReceiver"
+                  android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".controller.recognitionActivityPackages.DetectedActivitiesIntentService"
             android:exported="false"/>
-
         <service android:name=".controller.firebaseCloudMessagingPackages.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-
         <service android:name=".controller.firebaseCloudMessagingPackages.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>

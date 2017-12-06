@@ -19,7 +19,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -66,11 +69,11 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
 
     private static final String TAGER = EventsNearByFragment.class.getSimpleName();
 
-    @BindView(R.id.eventsProgressBar) ProgressBar mProgressBar;
     @BindView(R.id.searchEventNearBy) SearchView mSearchViewEventNearBy;
     @BindView(R.id.eventNearByRecyclerView) RecyclerView mRecyclerViewEventNearBy;
     @BindView(R.id.myEventsButton) Button mMyEventsButton;
     @BindView(R.id.eventsButton) Button mEventsButton;
+    @BindView(R.id.imageViewEventful) ImageView mImageView;
 
     private String mLocation ;
     private double mLatitude;
@@ -84,6 +87,7 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
     private ArrayList<Float> mLongitudes;
     private ArrayList<String> mTitles;
     private ArrayList<ScheduledEvent> mScheduledEvents;
+    private PersonalCalendarAdapter mPersonalCalendarAdapter;
 
     @SuppressLint("MissingPermission")
     @Nullable
@@ -92,6 +96,8 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
         View view = inflater.inflate(R.layout.fragment_events_nearby, container, false);
         ButterKnife.bind(this, view);
         FontHelper.setCustomTypeface(view);
+
+        mImageView.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.mapEvents);
         setRecyclerViewPositionAndHighlight(view);
@@ -102,39 +108,11 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
             mLongitude = location.getLongitude();
             mLocation = mLatitude + "," + mLongitude;
             mapFragment.getMapAsync(EventsNearByFragment.this);
-            fetchEvents();
+            fetchMyEvents();
         });
 
         mMyEventsButton.setText(R.string.my_events_button);
-        mMyEventsButton.setOnClickListener(view1 ->{
-            mIsOnEvents = false;
-            PersonalCalendarAdapter personalCalendarAdapter = new PersonalCalendarAdapter(getContext(), new ArrayList<>());
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users")
-                    .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
-            Query query = databaseReference.orderByChild("tp");
-
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    onMapReady(mGoogleMap);
-                    for(DataSnapshot d:dataSnapshot.getChildren()){
-                        ScheduledEvent scheduledEvent = d.getValue(ScheduledEvent.class);
-                        personalCalendarAdapter.add(scheduledEvent);
-                        mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(scheduledEvent.getLatitude(),
-                                scheduledEvent.getLongitude())).title(scheduledEvent.getPlaceName())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-                    }
-                    mScheduledEvents = personalCalendarAdapter.getScheduledEvents();
-                    mRecyclerViewEventNearBy.setAdapter(personalCalendarAdapter);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-        });
+        mMyEventsButton.setOnClickListener(view1 -> fetchMyEvents());
         mEventsButton.setText(R.string.events_button);
         mEventsButton.setOnClickListener(view1 -> {
             mIsOnEvents = true;
@@ -145,17 +123,20 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
         mSearchViewEventNearBy.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                onMapReady(mGoogleMap);
-                Service.getEvents().eventSearched(mLocation, query).enqueue(new Callback<EventfulResponse>() {
-                    @Override
-                    public void onResponse(Call<EventfulResponse> call, Response<EventfulResponse> response) {
-                        mEventNearByAdapter = new EventNearByAdapter(response.body(), EventsNearByFragment.this);
-                        mRecyclerViewEventNearBy.setAdapter(mEventNearByAdapter);
-                    }
+                if(mIsOnEvents) {
+                    onMapReady(mGoogleMap);
+                    Service.getEvents().eventSearched(mLocation, query).enqueue(new Callback<EventfulResponse>() {
+                        @Override
+                        public void onResponse(Call<EventfulResponse> call, Response<EventfulResponse> response) {
+                            mEventNearByAdapter = new EventNearByAdapter(response.body(), EventsNearByFragment.this);
+                            mRecyclerViewEventNearBy.setAdapter(mEventNearByAdapter);
+                        }
 
-                    @Override
-                    public void onFailure(Call<EventfulResponse> call, Throwable t) {}
-                });
+                        @Override
+                        public void onFailure(Call<EventfulResponse> call, Throwable t) {
+                        }
+                    });
+                }
                 return false;
             }
 
@@ -166,6 +147,36 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
         });
         FontHelper.setCustomTypeface(mMyEventsButton);
         return view;
+    }
+
+    private void fetchMyEvents() {
+        mIsOnEvents = false;
+        mPersonalCalendarAdapter = new PersonalCalendarAdapter(getContext(), new ArrayList<>());
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("users")
+                .child(Profile.getCurrentProfile().getId()).child("scheduledEvent");
+        Query query = databaseReference.orderByChild("tp");
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                onMapReady(mGoogleMap);
+                for(DataSnapshot d:dataSnapshot.getChildren()){
+                    ScheduledEvent scheduledEvent = d.getValue(ScheduledEvent.class);
+                    mPersonalCalendarAdapter.add(scheduledEvent);
+                    mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(scheduledEvent.getLatitude(),
+                            scheduledEvent.getLongitude())).title(scheduledEvent.getPlaceName())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                }
+                mScheduledEvents = mPersonalCalendarAdapter.getScheduledEvents();
+                mRecyclerViewEventNearBy.setAdapter(mPersonalCalendarAdapter);
+                highlightTheCurrentPlacesOnMyEvents(0);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @SuppressLint("NewApi")
@@ -189,17 +200,19 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
                 }
             }
         });
-        mProgressBar.setVisibility(View.VISIBLE);
-        mProgressBar.setProgressTintList(ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark)));
-        mRecyclerViewEventNearBy.setVisibility(View.GONE);
     }
 
     private void fetchEvents() {
+        mImageView.setVisibility(View.VISIBLE);
+        mRecyclerViewEventNearBy.setVisibility(View.GONE);
+        Animation animation = AnimationUtils.loadAnimation(getContext(), R.anim.fadein);
+        mImageView.startAnimation(animation);
         if(mLocation != null) {
             Service.getEvents().event(mLocation).enqueue(new Callback<EventfulResponse>() {
                 @Override
                 public void onResponse(Call<EventfulResponse> call, Response<EventfulResponse> response) {
-                    mProgressBar.setVisibility(View.GONE);
+                    mImageView.clearAnimation();
+                    mImageView.setVisibility(View.GONE);
                     mRecyclerViewEventNearBy.setVisibility(View.VISIBLE);
                     mEventNearByAdapter = new EventNearByAdapter(response.body(), EventsNearByFragment.this);
                     mRecyclerViewEventNearBy.setAdapter(mEventNearByAdapter);
@@ -234,7 +247,7 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
                 }
             }
             mRecyclerViewEventNearBy.getLayoutManager().scrollToPosition(pos);
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            //marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             return true;
         });
     }
@@ -257,10 +270,20 @@ public class EventsNearByFragment extends Fragment implements OnMapReadyCallback
                 .title(mTitles.get(position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
     }
 
-    private void highlightTheCurrentPlacesOnMyEvents(int position){
+    private void highlightTheCurrentPlacesOnMyEvents(int position) {
         mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(mScheduledEvents.get(position).getLatitude(),
                 mScheduledEvents.get(position).getLongitude())).title(mScheduledEvents.get(position).getPlaceName())
-        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+        if (position > 0) {
+            mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(mScheduledEvents.get(position - 1).getLatitude(),
+                    mScheduledEvents.get(position - 1).getLongitude())).title(mScheduledEvents.get(position - 1).getPlaceName())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        }
+        if (position < mScheduledEvents.size() - 1){
+            mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(mScheduledEvents.get(position + 1).getLatitude(),
+                    mScheduledEvents.get(position + 1).getLongitude())).title(mScheduledEvents.get(position + 1).getPlaceName())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        }
     }
 
 }

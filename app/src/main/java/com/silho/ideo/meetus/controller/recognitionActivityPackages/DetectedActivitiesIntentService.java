@@ -26,9 +26,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
-import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
+import com.silho.ideo.meetus.alarmManager.ReminderScheduler;
 import com.silho.ideo.meetus.model.ScheduledEvent;
-import com.silho.ideo.meetus.parsers.TrajectCreator;
+import com.silho.ideo.meetus.parsersAndCreators.TrajectCreator;
 
 import java.util.ArrayList;
 

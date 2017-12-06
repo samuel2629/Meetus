@@ -12,7 +12,7 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
-import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
+import com.silho.ideo.meetus.alarmManager.ReminderScheduler;
 
 /**
  * Created by Samuel on 01/08/2017.

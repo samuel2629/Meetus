@@ -6,10 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -21,9 +18,7 @@ import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.Profile;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,7 +26,7 @@ import com.silho.ideo.meetus.UI.fragments.EventsNearByFragment;
 import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
 import com.silho.ideo.meetus.adapter.PageAdapter;
 import com.silho.ideo.meetus.R;
-import com.silho.ideo.meetus.controller.alarmManager.ReminderScheduler;
+import com.silho.ideo.meetus.alarmManager.ReminderScheduler;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 
@@ -39,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -104,9 +100,7 @@ public class MainActivity extends AppCompatActivity {
                         AuthUI.getInstance()
                                 .createSignInIntentBuilder()
                                 .setIsSmartLockEnabled(false)
-                                .setAvailableProviders(Arrays.asList
-                                        (new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                                                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
+                                .setAvailableProviders(Collections.singletonList(new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build()))
                                 .setTheme(R.style.LoginTheme)
                                 .build(),
                         RC_SIGN_IN);
@@ -197,6 +191,8 @@ public class MainActivity extends AppCompatActivity {
         if(mAuth != null){
         mAuth.addAuthStateListener(mAuthStateListener);}
     }
+
+    /** Menu Methods**/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Samuel on 02/12/2017.
@@ -35,16 +36,20 @@ import java.util.List;
 public class PersonalCalendarAdapter extends RecyclerView.Adapter<PersonalCalendarAdapter.ViewHolder> {
 
     private Context mContext;
+    private ArrayList<ScheduledEvent> mScheduledEvents;
+    private ArrayList<ScheduledEvent> mEvents;
+
 
     public ArrayList<ScheduledEvent> getScheduledEvents() {
         return mScheduledEvents;
     }
 
-    private ArrayList<ScheduledEvent> mScheduledEvents;
-
     public PersonalCalendarAdapter(Context context, ArrayList<ScheduledEvent> scheduledEvents){
         mContext = context;
-        mScheduledEvents = scheduledEvents;}
+        mScheduledEvents = scheduledEvents;
+        mEvents = new ArrayList<>();
+        mEvents.addAll(mScheduledEvents);
+    }
 
 
     @Override
@@ -174,5 +179,21 @@ public class PersonalCalendarAdapter extends RecyclerView.Adapter<PersonalCalend
         public void bindEvent(int position) {
             bindEvent(mScheduledEvents.get(position));
         }
+    }
+
+
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        mEvents.clear();
+        if (charText.length() == 0) {
+            mScheduledEvents.addAll(mEvents);
+        } else {
+            for (ScheduledEvent wp : mEvents) {
+                if (wp.getPlaceName().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    mScheduledEvents.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 }

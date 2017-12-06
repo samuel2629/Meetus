@@ -18,17 +18,14 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.Profile;
-import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -59,9 +56,9 @@ import com.loopj.android.http.TextHttpResponseHandler;
 import com.silho.ideo.meetus.R;
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
 import com.silho.ideo.meetus.adapter.PageAdapter;
-import com.silho.ideo.meetus.parsers.PlaceNearbyCreator;
-import com.silho.ideo.meetus.parsers.RoutesCreator;
-import com.silho.ideo.meetus.parsers.TrajectCreator;
+import com.silho.ideo.meetus.parsersAndCreators.PlaceNearbyCreator;
+import com.silho.ideo.meetus.parsersAndCreators.RoutesCreator;
+import com.silho.ideo.meetus.parsersAndCreators.TrajectCreator;
 import com.silho.ideo.meetus.model.ScheduledEvent;
 import com.silho.ideo.meetus.model.User;
 import com.silho.ideo.meetus.utils.FontHelper;
@@ -366,7 +363,11 @@ public class ScheduleEventFragment extends Fragment implements GoogleApiClient.C
 
         JSONArray array = new JSONArray();
         for(int i=0; i<mFriend.size(); i++){
-            array.put(mFriend.get(i).transformToJsonObject());
+            if(mFriend != null) {
+                array.put(mFriend.get(i).transformToJsonObject());
+            } else {
+                Toast.makeText(getActivity(), "No Friend Choosed", Toast.LENGTH_SHORT).show();
+            }
         }
 
         params.put("friendsList", array);

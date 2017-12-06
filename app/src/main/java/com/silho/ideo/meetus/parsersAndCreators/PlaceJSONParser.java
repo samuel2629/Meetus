@@ -1,4 +1,4 @@
-package com.silho.ideo.meetus.parsers;
+package com.silho.ideo.meetus.parsersAndCreators;
 
 import org.json.JSONArray;
 import org.json.JSONException;
