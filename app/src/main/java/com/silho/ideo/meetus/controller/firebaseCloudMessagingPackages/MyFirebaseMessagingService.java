@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.text.format.DateFormat;
 
 import com.facebook.Profile;
@@ -26,6 +25,8 @@ import com.silho.ideo.meetus.UI.activities.EventResumerActivity;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
+
+import androidx.core.app.NotificationCompat;
 
 /**
  * Created by Samuel on 08/08/2017.

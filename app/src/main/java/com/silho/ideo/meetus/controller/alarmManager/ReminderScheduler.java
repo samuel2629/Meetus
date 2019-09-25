@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.facebook.Profile;
@@ -19,6 +18,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.silho.ideo.meetus.controller.recognitionActivityPackages.DetectedActivitiesIntentService;
 import com.silho.ideo.meetus.controller.recognitionActivityPackages.DetectionActivityIntentService;
 import com.silho.ideo.meetus.model.ScheduledEvent;
+
+import androidx.annotation.NonNull;
 
 /**
  * Created by Samuel on 01/11/2017.

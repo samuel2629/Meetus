@@ -3,10 +3,6 @@ package com.silho.ideo.meetus.parsers;
 import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSnapHelper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SnapHelper;
 import android.util.Log;
 
 import com.silho.ideo.meetus.adapter.ItemNearbyAdapter;
@@ -23,6 +19,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 /**
  * Created by Samuel on 25/07/2017.

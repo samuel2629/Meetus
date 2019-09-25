@@ -6,10 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Samuel on 15/09/2017.
@@ -117,7 +118,7 @@ public class PersonalCalendarAdapterSectioned extends SimpleSectionedAdapter<Per
     @Override
     protected void onBindItemViewHolder(ViewHolder holder, final int section, final int position) {
         holder.bindEvent(section, position);
-        FontHelper.setCustomTypeface(holder.itemView);
+        //FontHelper.setCustomTypeface(holder.itemView);
         holder.itemView.setOnLongClickListener(view -> {deleteDialogFragment(section, position).show();
             return true;
         });

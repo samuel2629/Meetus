@@ -2,8 +2,6 @@ package com.silho.ideo.meetus.adapter;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +19,8 @@ import com.silho.ideo.meetus.utils.CircleTransform;
 import com.silho.ideo.meetus.utils.FontHelper;
 
 import java.util.ArrayList;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Samuel on 25/07/2017.
@@ -50,7 +50,7 @@ public class ItemNearbyAdapter extends RecyclerView.Adapter<ItemNearbyAdapter.It
 
     @Override
     public void onBindViewHolder(ItemNearbyViewHolder holder, int position) {
-        FontHelper.setCustomTypeface(holder.itemView);
+        //FontHelper.setCustomTypeface(holder.itemView);
         holder.bindPlace(mPlaceNearby.get(position));
     }
 
@@ -89,7 +89,7 @@ public class ItemNearbyAdapter extends RecyclerView.Adapter<ItemNearbyAdapter.It
             mVincinityItem.setText(placeNearby.getVincinityPlaceNearby());
             Glide.with(mContext).load(placeNearby.getPhotoRefPlaceNearby())
                     .thumbnail(1f)
-                    .apply(RequestOptions.bitmapTransform(new CircleTransform(mContext)))
+                    .apply(RequestOptions.bitmapTransform(new CircleTransform()))
                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.ALL))
                     .into(mPhotoImageView);
         }

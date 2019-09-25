@@ -7,11 +7,12 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 
 import com.silho.ideo.meetus.R;
 
 import java.util.Calendar;
+
+import androidx.fragment.app.DialogFragment;
 
 /**
  * Created by Samuel on 18/08/2017.

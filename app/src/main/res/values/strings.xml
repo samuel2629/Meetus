@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Meetus</string>
-    <string name="facebook_application_id" translatable="false">385473215183838</string>
-    <string name="facebook_login_protocol_scheme" translatable="false">fb385473215183838</string>
+    <string name="facebook_application_id" translatable="false">314139439425350</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb314139439425350</string>
     <string name="need_location_permission_message">Location Permission is Require</string>
     <string name="silent_mode_activated">Silence !</string>
     <string name="back_to_normal">Back to Normal ?</string>

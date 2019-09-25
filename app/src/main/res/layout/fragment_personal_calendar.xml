@@ -5,7 +5,7 @@
     android:background="@color/colorPrimaryLight"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/reyclerViewCalendar"
             android:background="@color/colorPrimaryLight"
             android:layout_width="match_parent"

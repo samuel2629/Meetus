@@ -1,32 +1,20 @@
 apply plugin: 'com.android.application'
-
-def GOOGLE_API_KEY = '"' + GoogleApiKey + '"' ?: '"Api Key not Available."'
-def GOOGLE_GEO_API_KEY = '"' + GoogleGeoApiKey + '"' ?: '"Api Key not Available."'
-def STRING = 'String'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
     defaultConfig {
-        resConfigs "auto"
+        resConfigs "en"
         vectorDrawables.useSupportLibrary = true
         applicationId "com.silho.ideo.meetus"
-        minSdkVersion 16
-        targetSdkVersion 26
+        minSdkVersion 23
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
-        each { type ->
-            type.buildConfigField STRING, 'GoogleApiKey', GOOGLE_API_KEY
-            type.buildConfigField STRING, 'GOOGLE_GEO_API_KEY', GOOGLE_GEO_API_KEY
-        }
-
-       manifestPlaceholders = [
-               GOOGLE_API_KEY: GOOGLE_API_KEY,
-               GOOGLE_GEO_API_KEY: GOOGLE_GEO_API_KEY
-       ]
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -47,39 +35,46 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.loopj.android:android-async-http:1.4.9'
-    compile 'com.android.support.constraint:constraint-layout:1.1.0-beta3'
-    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
-    compile 'com.google.firebase:firebase-auth:11.4.2'
-    compile 'com.google.firebase:firebase-database:11.4.2'
-    compile 'com.google.firebase:firebase-messaging:11.4.2'
-    compile 'com.google.android.gms:play-services-places:11.4.2'
-    compile 'com.google.android.gms:play-services-location:11.4.2'
-    compile 'com.google.android.gms:play-services-maps:11.4.2'
-    compile 'com.firebase:firebase-jobdispatcher:0.7.0'
-    compile 'com.facebook.android:facebook-android-sdk:4.27.0'
-    compile 'com.jakewharton:butterknife:8.6.0'
-    compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
-    compile 'com.truizlop.sectionedrecyclerview:library:1.2.0'
-    compile 'com.evernote:android-job:1.1.11'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
-    testCompile 'org.robolectric:shadows-support-v4:3.3.2'
-    testCompile 'org.mockito:mockito-core:2.+'
-    testCompile 'com.android.support.test:rules:1.0.1'
-    testCompile 'com.android.support.test:runner:1.0.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-contrib:3.0.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
-    testCompile 'org.hamcrest:hamcrest-library:1.3'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.loopj.android:android-async-http:1.4.10'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'com.google.android.gms:play-services-gcm:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.firebaseui:firebase-ui-auth:6.0.2'
+    implementation 'com.google.firebase:firebase-core:17.2.0'
+    implementation 'com.google.firebase:firebase-auth:19.1.0'
+    implementation 'com.google.firebase:firebase-database:19.1.0'
+    implementation 'com.google.firebase:firebase-messaging:20.0.0'
+    implementation 'com.google.android.gms:play-services-places:17.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.firebase:firebase-jobdispatcher:0.7.0'
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.jakewharton:butterknife:10.2.0'
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation 'com.truizlop.sectionedrecyclerview:library:1.2.0'
+    implementation 'com.evernote:android-job:1.2.6'
 
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.robolectric:robolectric:4.3'
+    testImplementation 'org.robolectric:shadows-support-v4:3.3.2'
+    testImplementation 'org.mockito:mockito-core:3.0.0'
+    testImplementation 'androidx.test:rules:1.1.0'
+    testImplementation 'androidx.test:runner:1.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.1.0'
+    testImplementation 'org.hamcrest:hamcrest-library:2.1'
+
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 apply plugin: 'com.google.gms.google-services'
+repositories {
+    mavenCentral()
+}

@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
@@ -43,7 +43,7 @@
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp">
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/restaurantTypeFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -52,7 +52,7 @@
                         app:rippleColor="@color/colorSecondary"
                         app:srcCompat="@drawable/ic_restaurant_black_24dp"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/visitTypeFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -61,7 +61,7 @@
                         app:rippleColor="@color/colorSecondary"
                         app:srcCompat="@drawable/ic_account_balance_black_24dp"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/coffeeTypeFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -70,7 +70,7 @@
                         app:rippleColor="@color/colorSecondary"
                         app:srcCompat="@drawable/ic_free_breakfast_black_24dp"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/searchPlacesFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -101,7 +101,7 @@
                         android:layout_height="0.25dp"
                         android:background="@color/colorAccent"/>
 
-                    <android.support.v7.widget.RecyclerView
+                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewItemNearby"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -109,9 +109,9 @@
                 </FrameLayout>
             </LinearLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
@@ -141,7 +141,7 @@
                     android:gravity="center"
                     android:paddingTop="8dp">
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/transportFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -150,7 +150,7 @@
                         app:rippleColor="@color/colorSecondary"
                         app:srcCompat="@drawable/ic_directions_bus_black_24dp"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/drivingFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -159,7 +159,7 @@
                         app:rippleColor="@color/colorSecondary"
                         app:srcCompat="@drawable/ic_directions_car_black_24dp"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/walkingFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -169,7 +169,7 @@
                         app:srcCompat="@drawable/ic_directions_walk_black_24dp"
                         />
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/positionFAB"
                         style="@style/TypeFABTheme"
                         app:backgroundTint="@color/colorPrimary"
@@ -200,7 +200,7 @@
 
             </LinearLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
         <fragment
             class="com.silho.ideo.meetus.UI.fragments.FriendsFragment"
@@ -218,7 +218,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp">
 
-                <android.support.design.widget.FloatingActionButton
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/scheduleButton"
                     style="@style/TypeFABTheme"
                     app:backgroundTint="@color/colorPrimary"

@@ -2,8 +2,6 @@ package com.silho.ideo.meetus.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +26,9 @@ import com.silho.ideo.meetus.utils.FontHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Samuel on 03/08/2017.
@@ -92,7 +93,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final FriendsAdapter.ViewHolder holder, int position) {
-        FontHelper.setCustomTypeface(holder.mView);
+        //FontHelper.setCustomTypeface(holder.mView);
         final FriendItem friendItem = mValues.get(position);
         holder.mName.setText(friendItem.name);
         displayProfilePic(holder.mProfilePic, friendItem.image);
@@ -171,7 +172,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private void displayProfilePic(ImageView imageView, String url) {
         Glide.with(imageView.getContext()).load(url)
                 .thumbnail(1f).apply(RequestOptions
-                .bitmapTransform(new CircleTransform(imageView.getContext())))
+                .bitmapTransform(new CircleTransform()))
                 .apply(RequestOptions
                         .diskCacheStrategyOf(DiskCacheStrategy.ALL))
                 .into(imageView);

@@ -3,7 +3,6 @@ package com.silho.ideo.meetus.UI.fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
-import android.support.v4.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -12,6 +11,8 @@ import android.widget.TimePicker;
 import com.silho.ideo.meetus.R;
 
 import java.util.Calendar;
+
+import androidx.fragment.app.DialogFragment;
 
 /**
  * Created by Samuel on 21/08/2017.

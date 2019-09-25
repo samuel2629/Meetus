@@ -12,7 +12,7 @@ import android.widget.TextView;
  */
 
 public class FontHelper {
-    private static final String CUSTOM_FONT = "fonts/Lora-Regular.ttf";
+    private static final String CUSTOM_FONT = "font/lora_regular.ttf";
     private static Typeface customTypeface;
 
     /*
@@ -37,7 +37,7 @@ public class FontHelper {
             ViewGroup vg = (ViewGroup) v;
             for (int i = 0; i < vg.getChildCount(); i++) {
                 View child = vg.getChildAt(i);
-                setCustomTypeface(child);
+                //setCustomTypeface(child);
             }
         }
     }

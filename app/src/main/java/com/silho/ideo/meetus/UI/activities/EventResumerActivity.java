@@ -1,20 +1,11 @@
 package com.silho.ideo.meetus.UI.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -34,6 +25,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -59,6 +51,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
@@ -67,8 +68,10 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     @BindView(R.id.root) RelativeLayout mRelativeLayout;
-    @BindView(R.id.recyclerViewInvitation) RecyclerView mRecyclerView;
-    @BindView(R.id.positionFAB) FloatingActionButton mFABposition;
+    @BindView(R.id.recyclerViewInvitation)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.positionFAB)
+    FloatingActionButton mFABposition;
     @BindView(R.id.transportFAB) FloatingActionButton mFABTransport;
     @BindView(R.id.drivingFAB) FloatingActionButton mFABDriving;
     @BindView(R.id.walkingFAB) FloatingActionButton mFABWalking;
@@ -98,7 +101,7 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event_resumer);
         ButterKnife.bind(this);
-        FontHelper.setCustomTypeface(mRelativeLayout);
+        //FontHelper.setCustomTypeface(mRelativeLayout);
         mIdFacebookCurrent = Profile.getCurrentProfile().getId();
 
         buildGoogleApiClient();
@@ -374,6 +377,7 @@ public class EventResumerActivity extends AppCompatActivity implements OnMapRead
         finish();
     }
 
+    @SuppressLint("RestrictedApi")
     private void bindFriendsOnNotificationReceived(final JSONArray friendList) {
         if(friendList != null) {
             mFrameLayout.setVisibility(View.VISIBLE);

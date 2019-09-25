@@ -9,13 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +37,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -71,6 +65,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
@@ -93,7 +93,8 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 6;
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 7;
 
-    @BindView(R.id.recyclerViewItemNearby) RecyclerView mRecyclerView;
+    @BindView(R.id.recyclerViewItemNearby)
+    RecyclerView mRecyclerView;
     @BindView(R.id.durationTextView) TextView mDurationTextView;
     @BindView(R.id.addressTextView) TextView mAddressTextView;
     @BindView(R.id.scrollView) ScrollView mScrollView;
@@ -102,7 +103,8 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     @BindView(R.id.visitTypeFAB) FloatingActionButton mFABVisitType;
     @BindView(R.id.coffeeTypeFAB) FloatingActionButton mFABCoffeeType;
     @BindView(R.id.transportFAB) FloatingActionButton mFABTransport;
-    @BindView(R.id.drivingFAB) FloatingActionButton mFABDriving;
+    @BindView(R.id.drivingFAB)
+    FloatingActionButton mFABDriving;
     @BindView(R.id.walkingFAB) FloatingActionButton mFABWalking;
     @BindView(R.id.scheduleButton) FloatingActionButton mFABScheduleButton;
     @BindView(R.id.positionFAB) FloatingActionButton mFABPosition;
@@ -137,7 +139,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_foresee, container, false);
-        FontHelper.setCustomTypeface(view);
+        //FontHelper.setCustomTypeface(view);
         ButterKnife.bind(this, view);
 
         mFABRestaurantType.setOnClickListener(this);
@@ -389,7 +391,7 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
             array.put(mFriend.get(i).transformToJsonObject());
         }
 
-        params.put("friendsList", array);
+        //params.put("user_friends", array);
 
         client.post("https://meetusite.herokuapp.com/request", params,
                 new TextHttpResponseHandler() {
@@ -578,4 +580,6 @@ public class ForeseeFragment extends Fragment implements GoogleApiClient.Connect
 
         mFriend = new ArrayList<>(hashMap.values());
     }
+
+
 }

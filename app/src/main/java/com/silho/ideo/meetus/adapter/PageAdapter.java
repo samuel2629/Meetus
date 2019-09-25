@@ -1,12 +1,13 @@
 package com.silho.ideo.meetus.adapter;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.silho.ideo.meetus.UI.fragments.ForeseeFragment;
 import com.silho.ideo.meetus.UI.fragments.PersonalCalendarFragment;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 
 /**
  * Created by Samuel on 16/08/2017.

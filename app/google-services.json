@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "488244970343-9lbffidphi4tggcohhqg6bjgpf2dkrvt.apps.googleusercontent.com",
+          "client_id": "488244970343-ge35utqu4gt9uvkn6ragvkrkvihknrq1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.silho.ideo.meetus",
-            "certificate_hash": "3f0bc25d9bac8529601796f53d9c2e3c3384fba6"
+            "certificate_hash": "d192d730534fddbd9dcdc2dea60e084a3ab03a9b"
           }
         },
         {
@@ -33,20 +33,13 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 2,
           "other_platform_oauth_client": [
             {
               "client_id": "488244970343-v3sb4aof2a8rhc28fiuru242jnupb42t.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
-        },
-        "ads_service": {
-          "status": 2
         }
       }
     }
